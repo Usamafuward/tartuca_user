@@ -12,6 +12,7 @@ import AboutPage from './pages/AboutPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
+import { PrivacyPage, TermsPage } from './pages/LegalPages';
 
 function App() {
   return (
@@ -22,12 +23,15 @@ function App() {
           <Route path="/menu" element={<MenuPage />} />
           <Route path="/cart" element={<CheckoutPage />} />
           <Route path="/book-table" element={<BookTablePage />} />
+          <Route path="/book-a-table" element={<BookTablePage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/reviews" element={<ReviewsPage />} />
           <Route path="/delivery" element={<DeliveryPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
         </Route>
         
         <Route element={<AuthLayout />}>

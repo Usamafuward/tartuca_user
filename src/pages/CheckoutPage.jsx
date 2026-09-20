@@ -1,24 +1,57 @@
-import { useState } from 'react';
-import { CreditCard, Wallet, Banknote, Lock, ChevronRight, Minus, Plus, Trash2, Check } from 'lucide-react';
-import { createOrder } from '../services/api';
+import { useState, useEffect } from 'react';
+import { CreditCard, Wallet, Banknote, Lock, ChevronRight, Minus, Plus, Trash2, Check, ShoppingBag } from 'lucide-react';
+import { createOrder, fetchUserProfile, fetchRestaurantSettings } from '../services/api';
 import { useCart } from '../context/CartContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function CheckoutPage() {
+  const navigate = useNavigate();
   const { cartItems, updateQuantity, removeFromCart, getCartTotal, clearCart } = useCart();
   const [paymentMethod, setPaymentMethod] = useState('cash'); // Default to cash
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    email: '',
     address: '',
     apt: '',
     phone: '',
     instructions: ''
   });
   const [status, setStatus] = useState('idle');
+  const [placedOrder, setPlacedOrder] = useState(null);
+  const [deliveryFee, setDeliveryFee] = useState(2.99);
+
+  // Autofill user profile and fetch restaurant settings
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchUserProfile(token)
+        .then(profile => {
+          if (profile) {
+            const nameParts = (profile.full_name || '').split(' ');
+            setFormData(prev => ({
+              ...prev,
+              firstName: prev.firstName || nameParts[0] || '',
+              lastName: prev.lastName || nameParts.slice(1).join(' ') || '',
+              email: prev.email || profile.email || '',
+              phone: prev.phone || profile.phone || '',
+              address: prev.address || profile.address || ''
+            }));
+          }
+        })
+        .catch(err => console.log('Could not load profile for checkout', err));
+    }
+
+    fetchRestaurantSettings()
+      .then(settings => {
+        if (settings && settings.delivery_fee !== undefined) {
+          setDeliveryFee(Number(settings.delivery_fee));
+        }
+      })
+      .catch(err => console.log('Could not load settings for delivery fee', err));
+  }, []);
 
   const subtotal = getCartTotal();
-  const deliveryFee = 2.99;
   const tax = subtotal * 0.08;
   const total = subtotal + deliveryFee + tax;
 
@@ -34,14 +67,21 @@ function CheckoutPage() {
         quantity: item.quantity
       }));
 
-      await createOrder({
-        customer_name: `${formData.firstName} ${formData.lastName}`,
-        customer_phone: formData.phone,
-        delivery_address: `${formData.address}, ${formData.apt}`,
-        delivery_instructions: formData.instructions,
+      const fullAddress = formData.apt 
+        ? `${formData.address.trim()}, ${formData.apt.trim()}`
+        : formData.address.trim();
+
+      const orderResult = await createOrder({
+        customer_name: `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim(),
+        customer_email: formData.email.trim() || undefined,
+        customer_phone: formData.phone.trim(),
+        delivery_address: fullAddress,
+        delivery_instructions: formData.instructions.trim() || undefined,
         payment_method: paymentMethod,
         items: items
       });
+
+      setPlacedOrder(orderResult);
       clearCart();
       setStatus('success');
     } catch (error) {
@@ -51,18 +91,51 @@ function CheckoutPage() {
   };
 
   if (status === 'success') {
-      return (
-        <div className="bg-light min-h-screen py-12 flex items-center justify-center">
-            <div className="bg-white p-8 rounded-3xl shadow-sm max-w-md text-center">
-                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Check size={32} />
-                </div>
-                <h2 className="text-2xl font-bold text-dark mb-2">Order Placed!</h2>
-                <p className="text-gray-500">Your delicious food is on the way.</p>
-                <Link to="/" className="inline-block mt-6 text-primary font-bold hover:underline">Back to Home</Link>
+    return (
+      <div className="bg-light min-h-screen py-16 flex items-center justify-center px-4">
+        <div className="bg-white p-8 sm:p-10 rounded-3xl shadow-xl max-w-md w-full text-center border border-gray-100 animate-in fade-in zoom-in duration-300">
+          <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md shadow-green-100">
+            <Check size={40} className="stroke-[2.5]" />
+          </div>
+          <h2 className="text-3xl font-extrabold text-dark mb-2">Order Confirmed!</h2>
+          <p className="text-gray-500 mb-6 text-sm">
+            Thank you for ordering with Tartuca. Our chefs are firing up the ovens right now!
+          </p>
+          
+          {placedOrder && (
+            <div className="bg-gray-50 rounded-2xl p-4 mb-6 text-left space-y-2 border border-gray-100 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-400">Order Reference</span>
+                <span className="font-bold text-dark">#{placedOrder.id}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Total Amount</span>
+                <span className="font-bold text-primary">${Number(placedOrder.total_amount).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Payment</span>
+                <span className="font-medium text-dark capitalize">{placedOrder.payment_method}</span>
+              </div>
             </div>
+          )}
+
+          <div className="flex flex-col gap-3">
+            <Link 
+              to="/profile" 
+              className="w-full bg-primary text-white py-3.5 rounded-xl font-bold hover:bg-primary-dark transition-all shadow-md shadow-primary/20 text-center text-sm"
+            >
+              Track in Order History
+            </Link>
+            <Link 
+              to="/menu" 
+              className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-200 transition-all text-center text-sm"
+            >
+              Browse More Dishes
+            </Link>
+          </div>
         </div>
-      );
+      </div>
+    );
   }
 
   // NOTE: Previous "Empty Cart" UI logic removed to maintain consistent layout.

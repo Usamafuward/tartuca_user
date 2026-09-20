@@ -78,18 +78,21 @@ function GalleryPage() {
         {/* Masonry Grid Layout (Simplified with Columns) */}
         <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
           {filteredImages.map((image) => (
-            <div key={image.id} className="break-inside-avoid rounded-3xl overflow-hidden group relative cursor-pointer">
+            <div key={image.id} className="break-inside-avoid rounded-3xl overflow-hidden group relative cursor-pointer bg-gray-100 border border-gray-100 shadow-sm">
               <img 
-                src={image.src} 
-                alt={image.alt} 
+                src={image.src || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'} 
+                alt={image.alt || 'Tartuca Restaurant'} 
                 className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110" 
+                onError={(e) => {
+                  e.target.src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800';
+                }}
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
                 <div>
-                  <span className="text-primary text-xs font-bold uppercase tracking-wider bg-white/90 px-2 py-1 rounded mb-2 inline-block">
-                    {image.category}
+                  <span className="text-primary text-xs font-bold uppercase tracking-wider bg-white/90 px-2.5 py-1 rounded-md mb-2 inline-block shadow-xs">
+                    {image.category || 'General'}
                   </span>
-                  <h3 className="text-white font-bold text-lg">{image.alt}</h3>
+                  <h3 className="text-white font-bold text-lg drop-shadow-sm">{image.alt}</h3>
                 </div>
               </div>
             </div>

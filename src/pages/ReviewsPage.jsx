@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Star, ThumbsUp, MessageCircle, Send } from 'lucide-react';
-import { fetchReviews, createReview } from '../services/api';
+import { Star, ThumbsUp, MessageCircle, Send, CheckCircle2 } from 'lucide-react';
+import { fetchReviews, createReview, fetchUserProfile } from '../services/api';
 import { Skeleton, ReviewSkeleton } from '../components/common/Skeleton';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -10,12 +10,23 @@ function ReviewsPage() {
   const { showToast } = useToast();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
+  const [newReview, setNewReview] = useState({ rating: 5, comment: '', name: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [submittedNotice, setSubmittedNotice] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     loadReviews();
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchUserProfile(token)
+        .then(profile => {
+          if (profile && profile.full_name) {
+            setNewReview(prev => ({ ...prev, name: profile.full_name }));
+          }
+        })
+        .catch(() => {});
+    }
   }, []);
 
   const loadReviews = async () => {
@@ -23,13 +34,13 @@ function ReviewsPage() {
       const data = await fetchReviews();
       const mappedReviews = data.map(review => ({
         id: review.id,
-        name: review.author_name || "Anonymous", // Use author_name from backend
+        name: review.author_name || "Anonymous Guest",
         date: new Date(review.created_at).toLocaleDateString(),
         rating: review.rating,
-        avatar: `https://ui-avatars.com/api/?name=${review.author_name || "User"}&background=random`,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(review.author_name || "Guest")}&background=random`,
         content: review.comment,
-        likes: 0, // Placeholder
-        replies: 0 // Placeholder
+        likes: 0,
+        replies: 0
       }));
       setReviews(mappedReviews);
     } catch (error) {
@@ -52,20 +63,31 @@ function ReviewsPage() {
     try {
         const token = localStorage.getItem('token');
         await createReview(token, {
-            author_name: newReview.name || "Happy Customer", // We'll add name input
+            author_name: newReview.name || "Happy Customer",
             rating: newReview.rating,
             comment: newReview.comment
         });
         
-        setNewReview({ rating: 5, comment: '', name: '' });
-        loadReviews(); // Reload to see new review (if approved immediately or show message)
-        showToast("Review submitted for approval!", "success");
+        setNewReview(prev => ({ rating: 5, comment: '', name: prev.name }));
+        setSubmittedNotice(true);
+        loadReviews();
+        showToast("Review submitted successfully! It will appear once approved.", "success");
     } catch (err) {
         console.error(err);
         showToast('Failed to submit review', 'error');
     } finally {
         setSubmitting(false);
     }
+  };
+
+  const averageRating = reviews.length > 0
+    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+    : '5.0';
+
+  const getRatingPercentage = (star) => {
+    if (reviews.length === 0) return star === 5 ? 100 : 0;
+    const count = reviews.filter(r => Math.round(r.rating) === star).length;
+    return Math.round((count / reviews.length) * 100);
   };
 
   if (loading) {
@@ -111,25 +133,26 @@ function ReviewsPage() {
           <div className="lg:col-span-1 space-y-8">
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
               <div className="text-center mb-6">
-                <div className="text-6xl font-bold text-dark mb-2">4.8</div>
+                <div className="text-6xl font-bold text-dark mb-2">{averageRating}</div>
                 <div className="flex justify-center gap-1 mb-2">
                   {[1, 2, 3, 4, 5].map((i) => (
                     <Star key={i} size={24} className="text-secondary fill-secondary" />
                   ))}
                 </div>
-                <p className="text-gray-400 text-sm">Based on {reviews.length} reviews</p>
+                <p className="text-gray-400 text-sm">Based on {reviews.length} verified reviews</p>
               </div>
 
-              <div className="space-y-3 mb-8">
+              <div className="space-y-3 mb-2">
                 {[5, 4, 3, 2, 1].map((rating) => (
                   <div key={rating} className="flex items-center gap-3">
                     <span className="text-sm font-bold text-gray-500 w-3">{rating}</span>
                     <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-secondary rounded-full" 
-                        style={{ width: rating === 5 ? '85%' : rating === 4 ? '10%' : '5%' }}
+                        className="h-full bg-secondary rounded-full transition-all duration-500" 
+                        style={{ width: `${getRatingPercentage(rating)}%` }}
                       ></div>
                     </div>
+                    <span className="text-xs text-gray-400 w-8 text-right font-medium">{getRatingPercentage(rating)}%</span>
                   </div>
                 ))}
               </div>
@@ -138,7 +161,16 @@ function ReviewsPage() {
             {/* Write Review Form */}
             {isAuthenticated ? (
                 <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                    <h3 className="text-xl font-bold text-dark mb-4">Write a Review</h3>
+                    <h3 className="text-xl font-bold text-dark mb-1">Write a Review</h3>
+                    <p className="text-xs text-gray-400 mb-4">Share your feedback with the Tartuca community</p>
+
+                    {submittedNotice && (
+                        <div className="p-4 rounded-2xl bg-green-50 border border-green-200 text-green-800 text-xs mb-4 flex items-start gap-2.5">
+                            <CheckCircle2 size={16} className="text-green-600 shrink-0 mt-0.5" />
+                            <span>Thank you! Your review has been submitted for moderation and will appear publicly once approved.</span>
+                        </div>
+                    )}
+
                     {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
                     <form onSubmit={handleSubmitReview} className="space-y-4">
                         <div>

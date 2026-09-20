@@ -61,16 +61,30 @@ function HomePage() {
         })));
         setCategoriesLoading(false);
 
+        const getBadgeClass = (color) => {
+            if (!color) return 'bg-red-500';
+            if (color.startsWith('bg-')) return color;
+            const map = {
+                red: 'bg-red-500',
+                blue: 'bg-blue-500',
+                green: 'bg-green-500',
+                yellow: 'bg-amber-500',
+                orange: 'bg-orange-500',
+                purple: 'bg-purple-500'
+            };
+            return map[color.toLowerCase()] || 'bg-red-500';
+        };
+
         setSpecialOffers(offers.map(offer => ({
             id: offer.id,
             name: offer.title,
             description: offer.description,
             price: parseFloat(offer.price),
-            image: offer.image_url,
+            image: offer.has_image ? `${API_URL}/special-offers/${offer.id}/image` : (offer.image_url || 'https://images.unsplash.com/photo-1544025162-d76694265947?w=500'),
             badge: offer.badge_text,
-            badgeColor: offer.badge_color || 'bg-red-500',
-            rating: 4.8, // Dummy rating
-            reviews: 120 // Dummy reviews
+            badgeColor: getBadgeClass(offer.badge_color),
+            rating: 4.8,
+            reviews: 120
         })));
         setOffersLoading(false);
 
@@ -78,11 +92,14 @@ function HomePage() {
             name: r.author_name,
             rating: r.rating,
             content: r.comment,
-            avatar: `https://ui-avatars.com/api/?name=${r.author_name}&background=random`
+            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(r.author_name)}&background=random`
         })));
         setTestimonialsLoading(false);
 
-        setAtmosphereImages(gallery.map(img => ({ src: img.image_url, alt: img.alt_text })).slice(0, 3));
+        setAtmosphereImages(gallery.map(img => ({
+            src: img.has_image ? `${API_URL}/gallery/${img.id}/image` : (img.image_url || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'),
+            alt: img.alt_text || 'Tartuca Atmosphere'
+        })).slice(0, 3));
 
       } catch (error) {
         console.error("Failed to load home page data", error);

@@ -172,17 +172,49 @@ export const updateUserProfile = async (token, userData) => {
 
 export const createReservation = async (reservationData) => {
   try {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_URL}/reservations/`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: headers,
       body: JSON.stringify(reservationData),
     });
     if (!response.ok) throw new Error('Failed to create reservation');
     return await response.json();
   } catch (error) {
     console.error('Error creating reservation:', error);
+    throw error;
+  }
+};
+
+export const fetchUserReservations = async (token) => {
+  try {
+    const response = await fetch(`${API_URL}/reservations/my-reservations`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!response.ok) throw new Error('Failed to fetch reservations');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching reservations:', error);
+    throw error;
+  }
+};
+
+export const fetchRestaurantSettings = async () => {
+  try {
+    const response = await fetch(`${API_URL}/settings/`);
+    if (!response.ok) throw new Error('Failed to fetch settings');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching settings:', error);
     throw error;
   }
 };
@@ -209,3 +241,4 @@ export const createOrder = async (orderData) => {
     throw error;
   }
 };
+

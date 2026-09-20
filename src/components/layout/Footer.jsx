@@ -1,7 +1,40 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, Facebook, Instagram, Twitter } from 'lucide-react';
+import { fetchRestaurantSettings } from '../../services/api';
 
 function Footer() {
+  const [settings, setSettings] = useState({
+    name: 'Tartuca',
+    phone: '+1 (555) 123-4567',
+    email: 'hello@tartuca.com',
+    address: '123 Pizza Street, Foodville, FV 12345'
+  });
+
+  useEffect(() => {
+    fetchRestaurantSettings()
+      .then(data => {
+        if (data) {
+          setSettings(prev => ({
+            name: data.name || prev.name,
+            phone: data.phone || prev.phone,
+            email: data.email || prev.email,
+            address: data.address || prev.address
+          }));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const quickLinks = [
+    { label: 'Home', path: '/' },
+    { label: 'Menu', path: '/menu' },
+    { label: 'Book a Table', path: '/book-table' },
+    { label: 'Photo Gallery', path: '/gallery' },
+    { label: 'Customer Reviews', path: '/reviews' },
+    { label: 'About Us', path: '/about' }
+  ];
+
   return (
     <footer className="bg-dark text-white pt-20 pb-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -36,13 +69,13 @@ function Footer() {
           <div>
             <h4 className="font-bold text-white text-lg mb-6">Quick Links</h4>
             <ul className="space-y-4">
-              {['Home', 'Menu', 'Book a Table', 'Our Chefs', 'Contact'].map((item) => (
-                <li key={item}>
+              {quickLinks.map((item) => (
+                <li key={item.label}>
                   <Link
-                    to={item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`}
+                    to={item.path}
                     className="text-gray-400 hover:text-primary transition-colors text-sm"
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 </li>
               ))}
@@ -55,15 +88,15 @@ function Footer() {
             <ul className="space-y-4">
               <li className="flex items-start gap-3 text-gray-400 text-sm">
                 <MapPin size={18} className="text-primary shrink-0 mt-0.5" />
-                <span>123 Culinary Avenue,<br />Foodie City, FC 90210</span>
+                <span>{settings.address}</span>
               </li>
               <li className="flex items-center gap-3 text-gray-400 text-sm">
                 <Phone size={18} className="text-primary shrink-0" />
-                <span>+1 (555) 123-4567</span>
+                <span>{settings.phone}</span>
               </li>
               <li className="flex items-center gap-3 text-gray-400 text-sm">
                 <Mail size={18} className="text-primary shrink-0" />
-                <span>hello@tartuca.com</span>
+                <span>{settings.email}</span>
               </li>
             </ul>
           </div>
