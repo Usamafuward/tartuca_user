@@ -1,17 +1,28 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-primary: #FF5330; /* Orange from UI */
-  --color-primary-dark: #E04020;
-  --color-secondary: #FFB800; /* Star Yellow */
-  --color-accent: #10B981; /* Green */
-  --color-dark: #111827; /* Dark text */
-  --color-light: #FFF9F2; /* Cream background */
-  --color-gray-light: #F9FAFB;
-  --color-gray: #6B7280;
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
   
-  --animate-shimmer: shimmer 1.5s infinite;
+  --color-primary: #F59E0B;
+  --color-primary-hover: #D97706;
+  --color-primary-dark: #B45309;
+  --color-gold: #FBBF24;
+  --color-gold-light: #FEF3C7;
+  --color-secondary: #F59E0B;
+  --color-accent: #10B981;
+  --color-dark: #08090C;
+  --color-surface: #0E1015;
+  --color-card: #151821;
+  --color-card-border: rgba(255, 255, 255, 0.08);
+  --color-light: #08090C;
+  --color-gray-light: #161922;
+  --color-gray: #94A3B8;
+
+  --animate-shimmer: shimmer 2s infinite;
+  --animate-float: float 6s ease-in-out infinite;
 
   @keyframes shimmer {
     0% {
@@ -21,21 +32,72 @@
       transform: translateX(100%);
     }
   }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
 }
 
+/* ==========================================================================
+   THEME DESIGN TOKENS
+   ========================================================================== */
+:root,
+html.dark,
+html[data-theme="dark"] {
+  --app-bg: #08090C;
+  --app-surface: #0E1015;
+  --app-card: #151821;
+  --app-card-border: rgba(255, 255, 255, 0.08);
+  --app-text: #F8FAFC;
+  --app-text-muted: #94A3B8;
+  --app-input-bg: #0E1015;
+  --app-nav-bg: rgba(8, 9, 12, 0.85);
+  --app-nav-border: rgba(255, 255, 255, 0.08);
+  --app-footer-bg: #050608;
+  --app-footer-border: rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(21, 24, 33, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-hover-border: rgba(245, 158, 11, 0.35);
+  --glass-hover-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.5), 0 0 20px -4px rgba(245, 158, 11, 0.15);
+}
 
+html.light,
+html[data-theme="light"] {
+  --app-bg: #FAF7F2;
+  --app-surface: #FFFFFF;
+  --app-card: #FFFFFF;
+  --app-card-border: rgba(180, 83, 9, 0.12);
+  --app-text: #1C1917;
+  --app-text-muted: #57534E;
+  --app-input-bg: #F5F2EC;
+  --app-nav-bg: rgba(250, 247, 242, 0.94);
+  --app-nav-border: rgba(180, 83, 9, 0.12);
+  --app-footer-bg: #F3ECE1;
+  --app-footer-border: rgba(180, 83, 9, 0.15);
+  --glass-bg: #FFFFFF;
+  --glass-border: rgba(180, 83, 9, 0.12);
+  --glass-hover-border: rgba(217, 119, 6, 0.45);
+  --glass-hover-shadow: 0 16px 36px -6px rgba(180, 83, 9, 0.14), 0 2px 8px rgba(0, 0, 0, 0.04);
+}
 
 html,
 body {
   padding: 0;
   margin: 0;
   font-family: var(--font-sans);
-  background-color: var(--color-light);
+  background-color: var(--app-bg);
+  color: var(--app-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   width: 100%;
   scroll-behavior: smooth;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 #root {
@@ -43,4 +105,368 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: var(--app-bg);
+}
+
+/* Custom Luxury Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--app-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #242938;
+  border-radius: 9999px;
+  border: 2px solid var(--app-bg);
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: #D6D3D1;
+  border: 2px solid #FAF7F2;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #F59E0B;
+}
+
+/* Glassmorphism & Visual Tokens */
+.glass-panel {
+  background: var(--app-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  border-color: var(--glass-hover-border);
+  box-shadow: var(--glass-hover-shadow);
+}
+
+/* ==========================================================================
+   LIGHT THEME REFINED ARCHITECTURE
+   ========================================================================== */
+
+/* 1. Typography & Hierarchy */
+html.light h1:not(.keep-white):not(.\!text-white),
+html.light h2:not(.keep-white):not(.\!text-white),
+html.light h3:not(.keep-white):not(.\!text-white),
+html.light h4:not(.keep-white):not(.\!text-white),
+html.light h5:not(.keep-white):not(.\!text-white),
+html.light h6:not(.keep-white):not(.\!text-white) {
+  color: #1C1917;
+}
+
+/* Universal Protection for Text Over Images & Dark Gradient Overlays */
+html.light :is([class*="from-black"], [class*="via-black"], [class*="to-black"], [class*="bg-black/"], [class*="bg-black"], .dark-hero-banner) :is(h1, h2, h3, h4, h5, h6),
+html.light :is([class*="from-black"], [class*="via-black"], [class*="to-black"], [class*="bg-black/"], [class*="bg-black"], .dark-hero-banner) .text-white,
+html.light :is([class*="from-black"], [class*="via-black"], [class*="to-black"], [class*="bg-black/"], [class*="bg-black"], .dark-hero-banner) .\!text-white,
+html.light .\!text-white,
+html.light .keep-white {
+  color: #FFFFFF !important;
+}
+
+html.light :is([class*="from-black"], [class*="via-black"], [class*="to-black"], [class*="bg-black/"], [class*="bg-black"], .dark-hero-banner) :is(.text-slate-200, .text-slate-300, .\!text-slate-200),
+html.light .\!text-slate-200 {
+  color: #E2E8F0 !important;
+}
+
+html.light :is([class*="from-black"], [class*="via-black"], [class*="to-black"], [class*="bg-black/"], [class*="bg-black"], .dark-hero-banner) :is(.text-amber-400, .text-amber-300, .\!text-amber-400),
+html.light .\!text-amber-400 {
+  color: #FBBF24 !important;
+}
+
+/* Sibling content positioned over dark image overlays in hero banners */
+html.light :is(.dark-hero-banner, .image-hero-overlay) [class*="from-black"] ~ div :is(h1, h2, h3, h4, p, span.text-white, .text-white),
+html.light :is(.dark-hero-banner, .image-hero-overlay) [class*="from-black"] + div :is(h1, h2, h3, h4, p, span.text-white, .text-white) {
+  color: #FFFFFF !important;
+}
+
+html.light :is(.dark-hero-banner, .image-hero-overlay) [class*="from-black"] ~ div span[class*="text-amber"],
+html.light :is(.dark-hero-banner, .image-hero-overlay) [class*="from-black"] + div span[class*="text-amber"] {
+  color: #FBBF24 !important;
+}
+
+/* Replace text-white ONLY when not inside colored badges, dark buttons, or image overlays */
+html.light .text-white:not([class*="bg-amber"]):not([class*="bg-rose"]):not([class*="bg-emerald"]):not([class*="bg-sky"]):not([class*="bg-purple"]):not([class*="bg-primary"]):not([class*="bg-black"]):not([class*="badge"]):not(button.bg-gradient-to-r):not(a.bg-gradient-to-r):not(.badge-text):not(.keep-white):not(.\!text-white) {
+  color: #1C1917 !important;
+}
+
+/* Protect white text on colored buttons, badges, and dark photo overlays */
+html.light [class*="bg-rose"] .text-white,
+html.light [class*="bg-rose"] span,
+html.light [class*="bg-emerald"] .text-white,
+html.light [class*="bg-sky"] .text-white,
+html.light [class*="bg-purple"] .text-white,
+html.light [class*="bg-black"] .text-white,
+html.light [class*="bg-black/"] .text-white,
+html.light [class*="bg-black/"] span,
+html.light button[class*="bg-gradient-to-r"] *,
+html.light a[class*="bg-gradient-to-r"] * {
+  color: inherit;
+}
+
+/* Slate scales in light mode - tuned for warm readability */
+html.light .text-slate-100,
+html.light .text-slate-200 {
+  color: #292524 !important;
+}
+
+html.light .text-slate-300 {
+  color: #44403C !important;
+}
+
+html.light .text-slate-400 {
+  color: #57534E !important;
+}
+
+html.light .text-slate-500 {
+  color: #78716C !important;
+}
+
+/* 2. Card Surfaces & Overrides for hardcoded dark classes */
+html.light .glass-card {
+  box-shadow: 0 4px 20px -2px rgba(28, 25, 23, 0.05), 0 1px 3px 0 rgba(28, 25, 23, 0.03);
+}
+
+/* Replaces hardcoded dark cards with pure white surfaces with subtle warm borders */
+html.light .bg-\[\#0E1015\]:not(input):not(textarea):not(select),
+html.light .bg-\[\#0F1117\]:not(input):not(textarea):not(select):not(.dish-img-bg),
+html.light .bg-\[\#151821\]:not(.dish-img-bg),
+html.light .bg-\[\#161922\],
+html.light .bg-\[\#0F1117\]\/95 {
+  background-color: #FFFFFF !important;
+  border-color: rgba(180, 83, 9, 0.12) !important;
+}
+
+/* Floating hero cards */
+html.light .bg-\[\#0F1117\]\/95 {
+  box-shadow: 0 16px 36px -6px rgba(180, 83, 9, 0.16), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Hero & Page Banners */
+html.light .bg-gradient-to-r:is([class*="from-[#111319]"], [class*="from-[#11131A]"], [class*="from-[#141720]"]) {
+  background: linear-gradient(135deg, #FFFDF8 0%, #F6EFE3 50%, #EDE3D0 100%) !important;
+  border-color: rgba(180, 83, 9, 0.16) !important;
+  box-shadow: 0 12px 32px -6px rgba(180, 83, 9, 0.08) !important;
+}
+
+/* Dish image containers in light mode */
+html.light .h-48.bg-\[\#0F1117\],
+html.light .h-44.bg-\[\#0F1117\],
+html.light .h-52.bg-\[\#0F1117\] {
+  background-color: #EDE8DE !important;
+}
+
+/* 3. Form Controls & Inputs */
+html.light input:not([type="checkbox"]):not([type="radio"]),
+html.light textarea,
+html.light select,
+html.light .bg-\[\#0E1015\]:is(input, textarea, select),
+html.light .bg-\[\#0F1117\]:is(input, textarea, select) {
+  background-color: #F5F2EC !important;
+  color: #1C1917 !important;
+  border: 1px solid rgba(120, 113, 108, 0.22) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light input:not([type="checkbox"]):not([type="radio"]):focus,
+html.light textarea:focus,
+html.light select:focus {
+  background-color: #FFFFFF !important;
+  border-color: #D97706 !important;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.18) !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #A8A29E !important;
+}
+
+html.light select option {
+  background-color: #FFFFFF !important;
+  color: #1C1917 !important;
+}
+
+/* Tab switchers and segmented controllers */
+html.light .flex.bg-\[\#0E1015\],
+html.light div.bg-\[\#0E1015\].p-1\.5 {
+  background-color: #F5F2EC !important;
+  border-color: rgba(180, 83, 9, 0.15) !important;
+}
+
+html.light .flex.bg-\[\#0E1015\] button:not(.bg-amber-500),
+html.light div.bg-\[\#0E1015\].p-1\.5 button:not(.bg-amber-500) {
+  color: #57534E !important;
+}
+
+html.light .flex.bg-\[\#0E1015\] button:not(.bg-amber-500):hover,
+html.light div.bg-\[\#0E1015\].p-1\.5 button:not(.bg-amber-500):hover {
+  color: #1C1917 !important;
+}
+
+/* 4. Pills, Badges & Dividers */
+html.light .border-white\/10,
+html.light .border-white\/\[0\.08\],
+html.light .border-white\/\[0\.06\],
+html.light .border-white\/\[0\.07\],
+html.light .border-white\/20 {
+  border-color: rgba(180, 83, 9, 0.14) !important;
+}
+
+html.light .bg-white\/\[0\.03\],
+html.light .bg-white\/\[0\.04\],
+html.light .bg-white\/\[0\.02\],
+html.light .bg-white\/\[0\.05\],
+html.light .bg-white\/\[0\.06\] {
+  background-color: rgba(180, 83, 9, 0.06) !important;
+}
+
+/* Hero secondary button & light pills */
+html.light a.bg-white\/\[0\.04\],
+html.light button.bg-white\/\[0\.04\],
+html.light a.bg-white\/\[0\.05\],
+html.light button.bg-white\/\[0\.05\] {
+  background-color: #FFFFFF !important;
+  color: #1C1917 !important;
+  border: 1px solid rgba(180, 83, 9, 0.22) !important;
+  box-shadow: 0 2px 8px rgba(180, 83, 9, 0.05) !important;
+}
+
+html.light a.bg-white\/\[0\.04\]:hover,
+html.light button.bg-white\/\[0\.04\]:hover {
+  background-color: #FFFDF9 !important;
+  border-color: rgba(217, 119, 6, 0.5) !important;
+  color: #B45309 !important;
+}
+
+/* Quantity counter */
+html.light div.bg-\[\#0E1015\].p-1 {
+  background-color: #F5F2EC !important;
+  border-color: rgba(180, 83, 9, 0.18) !important;
+}
+
+/* 5. Rich Gold & Amber Accents in Light Mode */
+.gold-gradient-text {
+  background: linear-gradient(135deg, #FDE68A 0%, #F59E0B 50%, #D97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html.light .gold-gradient-text {
+  background: linear-gradient(135deg, #92400E 0%, #D97706 50%, #B45309 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+html.light .text-amber-400 {
+  color: #D97706 !important;
+}
+
+html.light .text-amber-300 {
+  color: #B45309 !important;
+}
+
+html.light .bg-amber-500\/10,
+html.light .bg-amber-500\/15 {
+  background-color: rgba(217, 119, 6, 0.1) !important;
+  border-color: rgba(217, 119, 6, 0.28) !important;
+}
+
+.gold-glow {
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.25);
+}
+
+html.light .gold-glow {
+  box-shadow: 0 0 25px rgba(217, 119, 6, 0.18);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+/* 6. Footer in Light Mode */
+html.light footer {
+  background-color: var(--app-footer-bg) !important;
+  border-top: 1px solid var(--app-footer-border) !important;
+  color: #44403C !important;
+}
+
+html.light footer .text-white {
+  color: #1C1917 !important;
+}
+
+html.light footer .text-slate-400 {
+  color: #57534E !important;
+}
+
+html.light footer .text-slate-300 {
+  color: #44403C !important;
+}
+
+html.light footer .bg-white\/\[0\.04\] {
+  background-color: #FFFFFF !important;
+  border-color: rgba(180, 83, 9, 0.15) !important;
+  color: #57534E !important;
+}
+
+html.light footer .bg-white\/\[0\.04\]:hover {
+  border-color: #D97706 !important;
+  color: #D97706 !important;
+}
+
+html.light footer input {
+  background-color: #FFFFFF !important;
+  border: 1px solid rgba(180, 83, 9, 0.2) !important;
+  color: #1C1917 !important;
+}
+
+/* 7. Navbar in Light Mode */
+html.light nav {
+  background-color: var(--app-nav-bg) !important;
+  border-bottom: 1px solid var(--app-nav-border) !important;
+  box-shadow: 0 4px 20px -2px rgba(28, 25, 23, 0.04) !important;
+}
+
+html.light nav .text-white {
+  color: #1C1917 !important;
+}
+
+html.light nav .bg-white\/\[0\.03\] {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(180, 83, 9, 0.14) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light nav a.text-slate-400 {
+  color: #57534E !important;
+}
+
+html.light nav a.text-slate-400:hover {
+  color: #B45309 !important;
+  background-color: rgba(217, 119, 6, 0.08) !important;
+}
+
+html.light nav button.bg-white\/\[0\.04\],
+html.light nav a.bg-white\/\[0\.04\] {
+  background-color: #FFFFFF !important;
+  border-color: rgba(180, 83, 9, 0.16) !important;
+  color: #292524 !important;
+}
+
+html.light nav button.bg-white\/\[0\.04\]:hover,
+html.light nav a.bg-white\/\[0\.04\]:hover {
+  border-color: rgba(217, 119, 6, 0.5) !important;
+  color: #D97706 !important;
 }

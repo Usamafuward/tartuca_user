@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, Users, Check, ChevronRight, Utensils, Sparkles, AlertCircle } from 'lucide-react';
+import { 
+  Calendar, Clock, Users, Check, ChevronRight, Utensils, 
+  Sparkles, AlertCircle, ShieldCheck, Flame, Leaf, User, Mail, Phone 
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { LoadingOverlay } from '../components/common/Loading';
 import { createReservation, fetchUserProfile } from '../services/api';
@@ -13,6 +16,20 @@ function BookTablePage() {
 
   const getTodayDate = () => {
     return new Date().toISOString().split('T')[0];
+  };
+
+  const formatDisplayDate = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+      }
+      return dateStr;
+    } catch {
+      return dateStr;
+    }
   };
 
   const [selectedDate, setSelectedDate] = useState(getTomorrowDate());
@@ -32,7 +49,7 @@ function BookTablePage() {
   const [confirmedBooking, setConfirmedBooking] = useState(null);
 
   const times = ['17:00:00', '17:30:00', '18:00:00', '18:30:00', '19:00:00', '19:30:00', '20:00:00', '20:30:00', '21:00:00', '21:30:00'];
-  const tagsList = ['Window Seat', 'High Chair', 'Quiet Area', 'Romantic Setting', 'Booth Preferred'];
+  const tagsList = ['Window View', 'Quiet Corner', 'Romantic Setting', 'Booth Preferred', 'High Chair Needed'];
 
   // Prefill authenticated user profile
   useEffect(() => {
@@ -88,48 +105,53 @@ function BookTablePage() {
       setStatus('success');
     } catch (error) {
       console.error("Booking failed", error);
-      setErrorMessage(error.message || "Unable to complete reservation. Please try again.");
+      setErrorMessage(error.message || "Unable to complete reservation. Please select an alternate slot or verify details.");
       setStatus('error');
     }
   };
 
   if (status === 'success' && confirmedBooking) {
     return (
-      <div className="bg-light min-h-screen py-16 flex items-center justify-center px-4">
-        <div className="bg-white p-8 sm:p-10 rounded-3xl shadow-xl max-w-lg w-full text-center border border-gray-100 animate-in fade-in zoom-in duration-300">
-          <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md shadow-green-100">
+      <div className="min-h-[80vh] py-16 flex items-center justify-center px-4">
+        <div className="glass-card p-8 sm:p-12 rounded-3xl shadow-2xl max-w-lg w-full text-center border border-amber-500/30 animate-in fade-in zoom-in duration-300">
+          <div className="w-20 h-20 bg-amber-500/15 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-amber-500/30 shadow-lg shadow-amber-500/20">
             <Check size={40} className="stroke-[2.5]" />
           </div>
-          <h2 className="text-3xl font-bold text-dark mb-2">Reservation Confirmed!</h2>
-          <p className="text-gray-500 mb-6 text-sm">
-            We are excited to host you at Tartuca. We have received your booking and it is currently being prepared.
+          <span className="text-amber-400 font-bold text-xs uppercase tracking-[0.2em] mb-2 block">
+            Table Reserved
+          </span>
+          <h2 className="text-3xl font-serif font-bold text-white mb-2">Reservation Confirmed!</h2>
+          <p className="text-slate-400 mb-8 text-xs sm:text-sm leading-relaxed">
+            Our team looks forward to welcoming you to Tartuca.
           </p>
 
-          <div className="bg-gray-50 rounded-2xl p-5 mb-8 text-left space-y-3 border border-gray-100">
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-400 font-medium">Reservation ID</span>
-              <span className="font-bold text-dark">#{confirmedBooking.id}</span>
+          <div className="bg-white/[0.03] rounded-2xl p-6 mb-8 text-left space-y-3.5 border border-white/[0.08]">
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-slate-500 uppercase tracking-wider font-semibold">Booking ID</span>
+              <span className="font-mono font-bold text-amber-400">#{confirmedBooking.id}</span>
             </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-400 font-medium">Date</span>
-              <span className="font-bold text-dark">{confirmedBooking.reservation_date}</span>
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-slate-500 uppercase tracking-wider font-semibold">Date</span>
+              <span className="font-semibold text-white">{confirmedBooking.reservation_date}</span>
             </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-400 font-medium">Time</span>
-              <span className="font-bold text-dark">{confirmedBooking.reservation_time ? confirmedBooking.reservation_time.slice(0, 5) : selectedTime.slice(0, 5)}</span>
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-slate-500 uppercase tracking-wider font-semibold">Seating Time</span>
+              <span className="font-semibold text-white">
+                {confirmedBooking.reservation_time ? confirmedBooking.reservation_time.slice(0, 5) : selectedTime.slice(0, 5)}
+              </span>
             </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-400 font-medium">Party Size</span>
-              <span className="font-bold text-dark">{confirmedBooking.party_size} Guests</span>
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-slate-500 uppercase tracking-wider font-semibold">Party</span>
+              <span className="font-semibold text-white">{confirmedBooking.party_size} Guests</span>
             </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-400 font-medium">Guest Name</span>
-              <span className="font-bold text-dark">{confirmedBooking.customer_name}</span>
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-slate-500 uppercase tracking-wider font-semibold">Primary Guest</span>
+              <span className="font-semibold text-white">{confirmedBooking.customer_name}</span>
             </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-400 font-medium">Status</span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 capitalize">
-                {confirmedBooking.status || 'Pending'}
+            <div className="flex justify-between items-center text-xs pt-2 border-t border-white/[0.06]">
+              <span className="text-slate-500 uppercase tracking-wider font-semibold">Status</span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 capitalize">
+                {confirmedBooking.status || 'Confirmed'}
               </span>
             </div>
           </div>
@@ -137,18 +159,18 @@ function BookTablePage() {
           <div className="flex flex-col sm:flex-row gap-3">
             <Link 
               to="/profile" 
-              className="flex-1 bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary-dark transition-all shadow-md shadow-primary/20 text-center text-sm"
+              className="flex-1 bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 py-3.5 rounded-xl font-extrabold hover:from-amber-300 hover:to-amber-500 transition-all shadow-md shadow-amber-500/20 text-center text-xs uppercase tracking-wider"
             >
-              View in My Profile
+              View In Profile
             </Link>
             <button 
               onClick={() => {
                 setStatus('idle');
                 setConfirmedBooking(null);
               }} 
-              className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-200 transition-all text-sm"
+              className="flex-1 bg-white/[0.05] border border-white/10 text-slate-200 py-3.5 rounded-xl font-bold hover:bg-white/[0.1] transition-all text-xs uppercase tracking-wider"
             >
-              Book Another Table
+              Reserve Another Table
             </button>
           </div>
         </div>
@@ -157,344 +179,488 @@ function BookTablePage() {
   }
 
   return (
-    <div className="bg-light min-h-screen py-12 relative">
-      <LoadingOverlay isVisible={status === 'submitting'} text="Reserving your table..." />
+    <div className="min-h-screen py-10 relative">
+      <LoadingOverlay isVisible={status === 'submitting'} text="Confirming your table reservation..." />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-2">
-            <Sparkles size={14} /> Instant Table Reservation
+        
+        {/* Page Header */}
+        <div className="mb-10 text-center sm:text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider mb-3">
+            <Sparkles size={13} /> Table Reservations
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-dark tracking-tight">Book Your Table</h1>
-          <p className="text-gray-500 mt-1">Reserve a table at Tartuca for fine dining, family gatherings, or romantic evenings.</p>
+          <h1 className="text-3xl sm:text-5xl font-serif font-bold text-white tracking-tight">
+            Reserve a Table
+          </h1>
+          <p className="text-slate-400 text-sm mt-2 max-w-xl">
+            Book your table online for lunch or dinner. We look forward to serving you.
+          </p>
         </div>
 
         {errorMessage && (
-          <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 flex items-center gap-3">
-            <AlertCircle size={20} className="shrink-0" />
-            <span className="text-sm font-medium">{errorMessage}</span>
+          <div className="mb-8 p-4 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 flex items-center gap-3 animate-in fade-in">
+            <AlertCircle size={20} className="shrink-0 text-rose-400" />
+            <span className="text-xs sm:text-sm font-medium">{errorMessage}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-8">
+          
           {/* Left Column - Steps */}
           <div className="lg:col-span-2 space-y-6">
             
             {/* Step 1: Party Size & Occasion */}
-            <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-gray-100">
+            <div className="glass-card p-6 sm:p-8 rounded-3xl border border-stone-200/80 dark:border-white/10 shadow-sm">
               <div className="flex items-center gap-4 mb-6">
-                <span className="w-8 h-8 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center shrink-0">1</span>
+                <span className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 font-serif font-bold flex items-center justify-center shrink-0 border border-amber-500/30">
+                  1
+                </span>
                 <div>
-                  <h2 className="text-xl font-bold text-dark">Party Size & Occasion</h2>
-                  <p className="text-xs text-gray-400">How many guests will be joining?</p>
+                  <h2 className="text-lg sm:text-xl font-serif font-bold text-stone-900 dark:text-white">Party Size & Occasion</h2>
+                  <p className="text-xs text-stone-500 dark:text-slate-400">Select guest count and the dining mood</p>
                 </div>
               </div>
               
-              <div className="flex flex-wrap gap-4 items-center">
-                <span className="text-sm font-bold text-gray-400 uppercase mr-2">Guests</span>
-                <div className="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-200">
-                  <button 
-                    type="button"
-                    onClick={() => setPartySize(Math.max(1, partySize - 1))}
-                    className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-white hover:shadow-sm rounded-lg transition-all font-bold"
-                  >
-                    -
-                  </button>
-                  <span className="w-12 text-center font-bold text-lg text-dark">{partySize}</span>
-                  <button 
-                    type="button"
-                    onClick={() => setPartySize(partySize + 1)}
-                    className="w-10 h-10 flex items-center justify-center text-primary hover:bg-white hover:shadow-sm rounded-lg transition-all font-bold"
-                  >
-                    +
-                  </button>
-                </div>
-
-                <div className="flex flex-wrap gap-2 ml-auto">
-                  {['Date Night', 'Business', 'Family', 'Birthday', 'Casual'].map((type) => (
-                    <button
-                      type="button"
-                      key={type}
-                      onClick={() => setOccasion(type)}
-                      className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all border ${
-                        occasion === type 
-                          ? 'bg-primary text-white border-primary shadow-sm shadow-primary/20' 
-                          : 'bg-white text-gray-600 border-gray-200 hover:border-primary/50'
-                      }`}
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Step 2: Date & Time */}
-            <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-gray-100">
-              <div className="flex items-center gap-4 mb-6">
-                <span className="w-8 h-8 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center shrink-0">2</span>
+              <div className="space-y-6">
+                {/* Party Size Selector */}
                 <div>
-                  <h2 className="text-xl font-bold text-dark">Date & Time</h2>
-                  <p className="text-xs text-gray-400">Select when you would like to dine</p>
-                </div>
-              </div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-slate-300 mb-3">
+                    Select Guest Count
+                  </label>
+                  <div className="flex flex-wrap items-center gap-3">
+                    {/* Stepper */}
+                    <div className="flex items-center bg-stone-100 dark:bg-[#0E1015] rounded-xl p-1 border border-stone-300/90 dark:border-white/10 shadow-inner">
+                      <button 
+                        type="button"
+                        onClick={() => setPartySize(Math.max(1, partySize - 1))}
+                        className="w-10 h-10 flex items-center justify-center text-stone-800 dark:text-slate-200 hover:text-stone-950 dark:hover:text-white hover:bg-stone-200 dark:hover:bg-white/[0.08] rounded-lg transition-all font-bold text-lg"
+                        aria-label="Decrease guest count"
+                      >
+                        -
+                      </button>
+                      <span className="w-24 text-center font-bold text-sm sm:text-base text-stone-900 dark:text-white font-sans">
+                        {partySize} {partySize === 1 ? 'Guest' : 'Guests'}
+                      </span>
+                      <button 
+                        type="button"
+                        onClick={() => setPartySize(partySize + 1)}
+                        className="w-10 h-10 flex items-center justify-center text-amber-600 dark:text-amber-400 hover:text-amber-500 hover:bg-stone-200 dark:hover:bg-white/[0.08] rounded-lg transition-all font-bold text-lg"
+                        aria-label="Increase guest count"
+                      >
+                        +
+                      </button>
+                    </div>
 
-              {/* Date Quick Select & Custom Picker */}
-              <div className="space-y-4 mb-6">
-                <label className="block text-sm font-semibold text-gray-700">Reservation Date</label>
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedDate(getTodayDate())}
-                    className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${
-                      selectedDate === getTodayDate()
-                        ? 'bg-primary text-white border-primary shadow-sm'
-                        : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
-                    }`}
-                  >
-                    Today
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedDate(getTomorrowDate())}
-                    className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${
-                      selectedDate === getTomorrowDate()
-                        ? 'bg-primary text-white border-primary shadow-sm'
-                        : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
-                    }`}
-                  >
-                    Tomorrow
-                  </button>
-                  <div className="relative flex-1 min-w-[200px]">
-                    <input
-                      type="date"
-                      min={getTodayDate()}
-                      value={selectedDate}
-                      onChange={e => setSelectedDate(e.target.value)}
-                      required
-                      className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Time Slots */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Available Time Slots</label>
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
-                  {times.map((time) => (
-                    <button
-                      type="button"
-                      key={time}
-                      onClick={() => setSelectedTime(time)}
-                      className={`py-2.5 rounded-xl text-sm font-bold transition-all border ${
-                        selectedTime === time
-                          ? 'bg-primary text-white border-primary shadow-md shadow-primary/20 scale-[1.02]'
-                          : 'bg-gray-50 text-gray-700 border-gray-100 hover:border-primary/40 hover:bg-white'
-                      }`}
-                    >
-                      {time.slice(0, 5)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Step 3: Preferences & Seating */}
-            <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-gray-100">
-              <div className="flex items-center gap-4 mb-6">
-                <span className="w-8 h-8 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center shrink-0">3</span>
-                <div>
-                  <h2 className="text-xl font-bold text-dark">Preferences & Requests</h2>
-                  <p className="text-xs text-gray-400">Customise your dining experience</p>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-sm font-bold text-dark mb-3">Seating Area</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setSeatingArea('Main Dining')}
-                      className={`p-3 rounded-xl border text-left transition-all ${
-                        seatingArea === 'Main Dining'
-                          ? 'border-primary bg-primary/5 text-primary font-bold shadow-sm'
-                          : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="text-sm">Main Dining</div>
-                      <div className="text-[11px] text-gray-400 font-normal mt-0.5">Classic atmosphere</div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSeatingArea('Patio / Terrace')}
-                      className={`p-3 rounded-xl border text-left transition-all ${
-                        seatingArea === 'Patio / Terrace'
-                          ? 'border-primary bg-primary/5 text-primary font-bold shadow-sm'
-                          : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="text-sm">Patio / Terrace</div>
-                      <div className="text-[11px] text-gray-400 font-normal mt-0.5">Open air garden</div>
-                    </button>
+                    {/* Quick Preset Pills */}
+                    <div className="flex flex-wrap gap-1.5 items-center">
+                      {[1, 2, 4, 6, 8].map((count) => (
+                        <button
+                          type="button"
+                          key={count}
+                          onClick={() => setPartySize(count)}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border ${
+                            partySize === count
+                              ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-md shadow-amber-500/20'
+                              : 'bg-stone-100 hover:bg-stone-200/70 text-stone-700 hover:text-stone-950 border-stone-300/80 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] dark:text-slate-300 dark:hover:text-white dark:border-white/10'
+                          }`}
+                        >
+                          {count} {count === 1 ? 'Guest' : 'Guests'}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <h3 className="text-sm font-bold text-dark mb-3">Special Preferences</h3>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {tagsList.map(req => (
+                {/* Occasion Selector */}
+                <div className="pt-5 border-t border-stone-200/80 dark:border-white/[0.08]">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-slate-300 mb-3">
+                    Dining Occasion
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {['Date Night', 'Business Dinner', 'Anniversary', 'Family Celebration', 'Casual Tasting'].map((type) => (
                       <button
                         type="button"
-                        key={req}
-                        onClick={() => toggleTag(req)}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border ${
-                          selectedTags.includes(req)
-                            ? 'bg-primary text-white border-primary shadow-xs'
-                            : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-primary/40'
+                        key={type}
+                        onClick={() => setOccasion(type)}
+                        className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all border ${
+                          occasion === type 
+                            ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-md shadow-amber-500/20' 
+                            : 'bg-stone-100 hover:bg-stone-200/70 text-stone-700 hover:text-stone-950 border-stone-300/80 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] dark:text-slate-300 dark:hover:text-white dark:border-white/10'
                         }`}
                       >
-                        {selectedTags.includes(req) ? `✓ ${req}` : `+ ${req}`}
+                        {type}
                       </button>
                     ))}
                   </div>
-                  <textarea 
-                    placeholder="Specific dietary requirements, food allergies, or notes..." 
-                    className="w-full h-20 bg-gray-50 rounded-xl border border-gray-200 p-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none resize-none"
-                    value={specialNotes}
-                    onChange={e => setSpecialNotes(e.target.value)}
-                  ></textarea>
                 </div>
               </div>
             </div>
 
-            {/* Step 4: Contact Details */}
-            <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-gray-100">
+            {/* Step 2: Date & Available Times */}
+            <div className="glass-card p-6 sm:p-8 rounded-3xl border border-stone-200/80 dark:border-white/10 shadow-sm">
               <div className="flex items-center gap-4 mb-6">
-                <span className="w-8 h-8 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center shrink-0">4</span>
+                <span className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 font-serif font-bold flex items-center justify-center shrink-0 border border-amber-500/30">
+                  2
+                </span>
                 <div>
-                  <h2 className="text-xl font-bold text-dark">Contact Information</h2>
-                  <p className="text-xs text-gray-400">Where we should send confirmation details</p>
+                  <h2 className="text-lg sm:text-xl font-serif font-bold text-stone-900 dark:text-white">Date & Seating Slot</h2>
+                  <p className="text-xs text-stone-500 dark:text-slate-400">Choose when you would like to be seated</p>
+                </div>
+              </div>
+
+              {/* Date Quick Buttons & Picker */}
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-slate-300 mb-3">
+                    Reservation Date
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDate(getTodayDate())}
+                      className={`py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all text-center ${
+                        selectedDate === getTodayDate()
+                          ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-sm'
+                          : 'bg-stone-100 hover:bg-stone-200/70 text-stone-700 hover:text-stone-950 border-stone-300/80 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] dark:text-slate-300 dark:hover:text-white dark:border-white/10'
+                      }`}
+                    >
+                      Today
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDate(getTomorrowDate())}
+                      className={`py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all text-center ${
+                        selectedDate === getTomorrowDate()
+                          ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-sm'
+                          : 'bg-stone-100 hover:bg-stone-200/70 text-stone-700 hover:text-stone-950 border-stone-300/80 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] dark:text-slate-300 dark:hover:text-white dark:border-white/10'
+                      }`}
+                    >
+                      Tomorrow
+                    </button>
+                    <div className="relative">
+                      <input
+                        type="date"
+                        min={getTodayDate()}
+                        value={selectedDate}
+                        onChange={e => setSelectedDate(e.target.value)}
+                        required
+                        className="w-full h-full py-2.5 px-4 bg-stone-100 dark:bg-[#0E1015] border border-stone-300/90 dark:border-white/10 rounded-xl text-xs text-stone-900 dark:text-white font-semibold focus:outline-none focus:border-amber-500 cursor-pointer shadow-inner"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Seating Times */}
+                <div className="pt-5 border-t border-stone-200/80 dark:border-white/[0.08]">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-slate-300">
+                      Available Service Times (Dinner)
+                    </label>
+                    <span className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">90-minute dining duration</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                    {times.map((time) => (
+                      <button
+                        type="button"
+                        key={time}
+                        onClick={() => setSelectedTime(time)}
+                        className={`py-3 rounded-xl text-xs font-bold font-mono transition-all border ${
+                          selectedTime === time
+                            ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-md shadow-amber-500/25 scale-[1.02]'
+                            : 'bg-stone-100 hover:bg-stone-200/70 text-stone-800 hover:text-stone-950 border-stone-300/80 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] dark:text-slate-300 dark:hover:text-white dark:border-white/10'
+                        }`}
+                      >
+                        {time.slice(0, 5)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3: Atmosphere & Special Requests */}
+            <div className="glass-card p-6 sm:p-8 rounded-3xl border border-stone-200/80 dark:border-white/10 shadow-sm">
+              <div className="flex items-center gap-4 mb-6">
+                <span className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 font-serif font-bold flex items-center justify-center shrink-0 border border-amber-500/30">
+                  3
+                </span>
+                <div>
+                  <h2 className="text-lg sm:text-xl font-serif font-bold text-stone-900 dark:text-white">Atmosphere & Special Requests</h2>
+                  <p className="text-xs text-stone-500 dark:text-slate-400">Tailor your location and dietary requirements</p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {/* Seating Location Cards */}
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-slate-300 mb-3">
+                    Seating Area & Ambiance
+                  </h3>
+                  <div className="grid sm:grid-cols-2 gap-3.5">
+                    <button
+                      type="button"
+                      onClick={() => setSeatingArea('Main Dining')}
+                      className={`p-4 rounded-2xl border text-left transition-all ${
+                        seatingArea === 'Main Dining'
+                          ? 'border-amber-500 bg-amber-500/15 dark:bg-amber-500/10 shadow-sm ring-1 ring-amber-500/30'
+                          : 'border-stone-300/80 dark:border-white/10 bg-stone-100/70 hover:bg-stone-100 dark:bg-white/[0.03] hover:border-amber-500/40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="text-sm font-bold text-stone-900 dark:text-white flex items-center gap-2">
+                          <Flame size={16} className="text-amber-600 dark:text-amber-400" />
+                          <span>Main Indoor Dining (AC)</span>
+                        </div>
+                        {seatingArea === 'Main Dining' && (
+                          <span className="w-5 h-5 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center text-xs font-bold">✓</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-stone-600 dark:text-slate-400 font-normal">
+                        Comfortable air-conditioned indoor seating with a view of our woodfired pizza oven
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSeatingArea('Patio / Terrace')}
+                      className={`p-4 rounded-2xl border text-left transition-all ${
+                        seatingArea === 'Patio / Terrace'
+                          ? 'border-amber-500 bg-amber-500/15 dark:bg-amber-500/10 shadow-sm ring-1 ring-amber-500/30'
+                          : 'border-stone-300/80 dark:border-white/10 bg-stone-100/70 hover:bg-stone-100 dark:bg-white/[0.03] hover:border-amber-500/40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="text-sm font-bold text-stone-900 dark:text-white flex items-center gap-2">
+                          <Leaf size={16} className="text-emerald-600 dark:text-emerald-400" />
+                          <span>Garden Terrace (Outdoor)</span>
+                        </div>
+                        {seatingArea === 'Patio / Terrace' && (
+                          <span className="w-5 h-5 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center text-xs font-bold">✓</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-stone-600 dark:text-slate-400 font-normal">
+                        Relaxing outdoor garden terrace seating, pleasant for warm evening dining
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Table Preferences Tags */}
+                <div className="pt-5 border-t border-stone-200/80 dark:border-white/[0.08]">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-slate-300 mb-3">
+                    Table Preferences (Optional)
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {tagsList.map(req => {
+                      const isChecked = selectedTags.includes(req);
+                      return (
+                        <button
+                          type="button"
+                          key={req}
+                          onClick={() => toggleTag(req)}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all border flex items-center gap-1.5 ${
+                            isChecked
+                              ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-sm font-bold'
+                              : 'bg-stone-100 hover:bg-stone-200/70 text-stone-700 hover:text-stone-950 border-stone-300/80 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] dark:text-slate-300 dark:hover:text-white dark:border-white/10'
+                          }`}
+                        >
+                          <span>{isChecked ? '✓' : '+'}</span>
+                          <span>{req}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Special Requests Textarea */}
+                <div className="pt-5 border-t border-stone-200/80 dark:border-white/[0.08]">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-slate-300 mb-2">
+                    Dietary Requirements & Notes for the Kitchen
+                  </label>
+                  <textarea 
+                    placeholder="e.g. Celebrating a milestone anniversary; one guest has a shellfish allergy; prefer high table if available..." 
+                    className="w-full h-24 bg-stone-100 dark:bg-[#0E1015] rounded-2xl border border-stone-300/90 dark:border-white/10 p-3.5 text-xs text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-slate-500 focus:border-amber-500 focus:outline-none resize-none shadow-inner font-normal"
+                    value={specialNotes}
+                    onChange={e => setSpecialNotes(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Step 4: Contact Information */}
+            <div className="glass-card p-6 sm:p-8 rounded-3xl border border-stone-200/80 dark:border-white/10 shadow-sm">
+              <div className="flex items-center gap-4 mb-6">
+                <span className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 font-serif font-bold flex items-center justify-center shrink-0 border border-amber-500/30">
+                  4
+                </span>
+                <div>
+                  <h2 className="text-lg sm:text-xl font-serif font-bold text-stone-900 dark:text-white">Lead Guest Information</h2>
+                  <p className="text-xs text-stone-500 dark:text-slate-400">Where we send SMS & email booking confirmation</p>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. John Smith" 
-                    required
-                    className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none text-sm"
-                    value={formData.customer_name}
-                    onChange={e => setFormData({...formData, customer_name: e.target.value})}
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1">Email Address</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-slate-300 mb-1.5">
+                    Full Name *
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500 dark:text-slate-400" size={16} />
                     <input 
-                      type="email" 
-                      placeholder="e.g. john@example.com" 
+                      type="text" 
+                      placeholder="e.g. Kasun Perera" 
                       required
-                      className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none text-sm"
-                      value={formData.customer_email}
-                      onChange={e => setFormData({...formData, customer_email: e.target.value})}
+                      className="w-full pl-10 pr-4 py-3 bg-stone-100 dark:bg-[#0E1015] rounded-xl border border-stone-300/90 dark:border-white/10 text-xs text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-slate-500 focus:border-amber-500 focus:outline-none shadow-inner font-medium"
+                      value={formData.customer_name}
+                      onChange={e => setFormData({...formData, customer_name: e.target.value})}
                     />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1">Phone Number</label>
-                    <input 
-                      type="tel" 
-                      placeholder="e.g. +1 234 567 8900" 
-                      required
-                      className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none text-sm"
-                      value={formData.customer_phone}
-                      onChange={e => setFormData({...formData, customer_phone: e.target.value})}
-                    />
+                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-slate-300 mb-1.5">
+                      Email Address *
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500 dark:text-slate-400" size={16} />
+                      <input 
+                        type="email" 
+                        placeholder="e.g. kasun@example.com" 
+                        required
+                        className="w-full pl-10 pr-4 py-3 bg-stone-100 dark:bg-[#0E1015] rounded-xl border border-stone-300/90 dark:border-white/10 text-xs text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-slate-500 focus:border-amber-500 focus:outline-none shadow-inner font-medium"
+                        value={formData.customer_email}
+                        onChange={e => setFormData({...formData, customer_email: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-slate-300 mb-1.5">
+                      Mobile Phone Number *
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500 dark:text-slate-400" size={16} />
+                      <input 
+                        type="tel" 
+                        placeholder="e.g. +94 77 123 4567" 
+                        required
+                        className="w-full pl-10 pr-4 py-3 bg-stone-100 dark:bg-[#0E1015] rounded-xl border border-stone-300/90 dark:border-white/10 text-xs text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-slate-500 focus:border-amber-500 focus:outline-none shadow-inner font-medium"
+                        value={formData.customer_phone}
+                        onChange={e => setFormData({...formData, customer_phone: e.target.value})}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+
           </div>
 
-          {/* Right Column - Summary Box */}
+          {/* Right Column - Booking Summary Box */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 sticky top-24 overflow-hidden">
-              {/* Header Image */}
-              <div className="h-36 bg-gray-200 relative">
+            <div className="glass-card rounded-3xl border border-stone-200/80 dark:border-white/10 sticky top-6 overflow-hidden shadow-2xl space-y-0">
+              
+              {/* Header Visual Banner */}
+              <div className="h-44 bg-[#0E1015] relative overflow-hidden">
                 <img 
                   src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=800" 
-                  alt="Tartuca Restaurant Dining" 
+                  alt="Tartuca Dining Atmosphere" 
                   className="w-full h-full object-cover" 
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-6">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent flex items-end p-6 z-10">
                   <div>
-                    <span className="text-primary-light text-xs font-bold uppercase tracking-wider">Tartuca Fine Dining</span>
-                    <h2 className="text-white font-bold text-xl">Reservation Summary</h2>
+                    <span className="!text-amber-400 text-amber-400 text-[10px] font-extrabold uppercase tracking-widest block mb-0.5">
+                      Tartuca Dining
+                    </span>
+                    <h2 className="!text-white text-white font-serif font-bold text-xl drop-shadow-md">Reservation Summary</h2>
                   </div>
                 </div>
               </div>
 
-              <div className="p-6 space-y-5">
-                <div className="flex gap-4 items-start">
-                  <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-primary shrink-0">
+              <div className="p-6 space-y-4">
+                <div className="flex gap-3.5 items-center">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
                     <Calendar size={18} />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-gray-400 uppercase mb-0.5">Date</p>
-                    <p className="font-bold text-dark">{selectedDate}</p>
+                    <p className="text-[10px] font-bold text-stone-500 dark:text-slate-400 uppercase tracking-wider">Date</p>
+                    <p className="font-bold text-stone-900 dark:text-white text-xs sm:text-sm">
+                      {formatDisplayDate(selectedDate)}
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex gap-4 items-start">
-                  <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-primary shrink-0">
+                <div className="flex gap-3.5 items-center">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
                     <Clock size={18} />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-gray-400 uppercase mb-0.5">Time</p>
-                    <p className="font-bold text-dark">{selectedTime.slice(0, 5)}</p>
+                    <p className="text-[10px] font-bold text-stone-500 dark:text-slate-400 uppercase tracking-wider">Seating Time</p>
+                    <p className="font-bold text-stone-900 dark:text-white text-xs sm:text-sm">
+                      {selectedTime.slice(0, 5)} (Dinner Service)
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex gap-4 items-start">
-                  <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-primary shrink-0">
+                <div className="flex gap-3.5 items-center">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
                     <Users size={18} />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-gray-400 uppercase mb-0.5">Party Size</p>
-                    <p className="font-bold text-dark">{partySize} {partySize === 1 ? 'Guest' : 'Guests'}</p>
+                    <p className="text-[10px] font-bold text-stone-500 dark:text-slate-400 uppercase tracking-wider">Party Size</p>
+                    <p className="font-bold text-stone-900 dark:text-white text-xs sm:text-sm">{partySize} {partySize === 1 ? 'Guest' : 'Guests'}</p>
                   </div>
                 </div>
 
-                <div className="flex gap-4 items-start pb-5 border-b border-gray-100">
-                  <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-primary shrink-0">
+                <div className="flex gap-3.5 items-center pb-4 border-b border-stone-200/80 dark:border-white/[0.08]">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
                     <Utensils size={18} />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-gray-400 uppercase mb-0.5">Occasion & Area</p>
-                    <p className="font-bold text-dark">{occasion} ({seatingArea})</p>
+                    <p className="text-[10px] font-bold text-stone-500 dark:text-slate-400 uppercase tracking-wider">Occasion & Area</p>
+                    <p className="font-bold text-stone-900 dark:text-white text-xs sm:text-sm">{occasion} • {seatingArea}</p>
                   </div>
                 </div>
 
-                <button 
-                  type="submit" 
-                  disabled={status === 'submitting'}
-                  className="w-full bg-primary text-white py-3.5 rounded-xl font-bold hover:bg-primary-dark transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2 disabled:opacity-70 active:scale-[0.98]"
-                >
-                  {status === 'submitting' ? 'Booking Table...' : (
-                    <>Confirm Reservation <ChevronRight size={18} /></>
-                  )}
-                </button>
-                
-                <div className="flex items-center justify-center gap-4 text-[11px] text-gray-400 pt-1">
-                  <span className="flex items-center gap-1"><Check size={12} className="text-green-500" /> Free Cancellation</span>
-                  <span className="flex items-center gap-1"><Check size={12} className="text-green-500" /> Instant Confirmation</span>
+                {/* Reservation Notes */}
+                <div className="p-3.5 rounded-2xl bg-amber-500/[0.08] border border-amber-500/25 text-xs space-y-2">
+                  <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-bold uppercase tracking-wider text-[10px]">
+                    <Sparkles size={13} /> Reservation Information
+                  </div>
+                  <ul className="text-[11px] text-stone-700 dark:text-slate-300 space-y-1 font-medium">
+                    <li className="flex items-center gap-1.5">
+                      <Check size={12} className="text-emerald-600 dark:text-emerald-400 shrink-0 stroke-[2.5]" />
+                      <span>Complimentary bread basket & olive oil</span>
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <Check size={12} className="text-emerald-600 dark:text-emerald-400 shrink-0 stroke-[2.5]" />
+                      <span>Indoor AC & outdoor terrace seating options</span>
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <Check size={12} className="text-emerald-600 dark:text-emerald-400 shrink-0 stroke-[2.5]" />
+                      <span>15-minute table hold grace period</span>
+                    </li>
+                  </ul>
                 </div>
+
+                <button 
+                  type="submit"
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-amber-500/25 transition-all duration-200 hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <Sparkles size={15} className="stroke-[2.5]" />
+                  <span>Confirm Table Reservation</span>
+                </button>
+
+                <p className="text-[10px] text-stone-600 dark:text-slate-400 text-center leading-relaxed flex items-center justify-center gap-1 pt-1 font-medium">
+                  <ShieldCheck size={13} className="text-amber-600 dark:text-amber-400" /> Instant confirmation. No cancellation fee.
+                </p>
               </div>
             </div>
           </div>
+
         </form>
+
       </div>
     </div>
   );

@@ -1,13 +1,13 @@
 import React from 'react';
 
-// Base Skeleton Component with Shimmer Effect
+// Base Skeleton Component with Dark Shimmer Effect
 export const Skeleton = ({ className = '', ...props }) => {
   return (
     <div 
-      className={`bg-gray-200 relative overflow-hidden ${className}`}
+      className={`bg-white/[0.05] relative overflow-hidden ${className}`}
       {...props}
     >
-      <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+      <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
     </div>
   );
 };
@@ -17,7 +17,7 @@ export const MenuItemSkeleton = ({ count = 6 }) => {
   return (
     <>
       {Array(count).fill(0).map((_, i) => (
-        <div key={i} className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100">
+        <div key={i} className="glass-card rounded-3xl p-4 border border-white/10">
           {/* Image Placeholder */}
           <Skeleton className="h-48 rounded-2xl mb-4 w-full" />
           
@@ -42,7 +42,7 @@ export const MenuItemSkeleton = ({ count = 6 }) => {
 // Hero Section Skeleton
 export const HeroSkeleton = () => {
   return (
-    <div className="relative w-full h-[500px] bg-gray-50 flex items-center">
+    <div className="relative w-full h-[500px] flex items-center">
       <div className="container mx-auto px-4 grid md:grid-cols-2 gap-8 items-center">
         <div className="space-y-6">
           <Skeleton className="h-16 w-3/4 rounded-2xl" />
@@ -64,11 +64,11 @@ export const HeroSkeleton = () => {
 // Gallery Grid Skeleton
 export const GallerySkeleton = ({ count = 6 }) => {
   return (
-    <div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-4">
+    <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
       {Array(count).fill(0).map((_, i) => (
         <Skeleton 
           key={i} 
-          className={`rounded-2xl w-full ${i % 2 === 0 ? 'h-64' : 'h-80'}`} 
+          className={`rounded-3xl w-full ${i % 2 === 0 ? 'h-64' : 'h-80'}`} 
         />
       ))}
     </div>
@@ -80,7 +80,7 @@ export const CategorySkeleton = ({ count = 4 }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {Array(count).fill(0).map((_, i) => (
-        <div key={i} className="flex flex-col items-center justify-center p-10 rounded-3xl bg-gray-50 border border-gray-100 relative overflow-hidden h-64">
+        <div key={i} className="glass-card flex flex-col items-center justify-center p-10 rounded-3xl border border-white/10 relative overflow-hidden h-64">
            <Skeleton className="w-20 h-20 rounded-full mb-6" />
            <Skeleton className="h-6 w-32 rounded-md mb-2" />
            <Skeleton className="h-4 w-16 rounded-md" />
@@ -109,7 +109,7 @@ export const ReviewSkeleton = ({ count = 3 }) => {
   return (
     <div className="space-y-6">
       {Array(count).fill(0).map((_, i) => (
-        <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+        <div key={i} className="glass-card p-6 sm:p-8 rounded-3xl border border-white/10">
            <div className="flex items-center gap-4 mb-4">
               <Skeleton className="w-12 h-12 rounded-full" />
               <div className="space-y-2">

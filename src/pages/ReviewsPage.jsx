@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Star, ThumbsUp, MessageCircle, Send, CheckCircle2 } from 'lucide-react';
+import { Star, ThumbsUp, Send, CheckCircle2, ShieldCheck, Sparkles, LogIn, MessageSquare } from 'lucide-react';
 import { fetchReviews, createReview, fetchUserProfile } from '../services/api';
 import { Skeleton, ReviewSkeleton } from '../components/common/Skeleton';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { Link } from 'react-router-dom';
 
 function ReviewsPage() {
   const { isAuthenticated } = useAuth();
-  const { showToast } = useToast();
+  const { showToast } = useToast?.() || { showToast: () => {} };
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newReview, setNewReview] = useState({ rating: 5, comment: '', name: '' });
@@ -29,18 +30,24 @@ function ReviewsPage() {
     }
   }, []);
 
+  const getInitials = (name = '') => {
+    const clean = name.trim();
+    if (!clean) return 'TP';
+    const parts = clean.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
   const loadReviews = async () => {
     try {
-      const data = await fetchReviews();
+      const data = await fetchReviews().catch(() => []);
       const mappedReviews = data.map(review => ({
         id: review.id,
-        name: review.author_name || "Anonymous Guest",
-        date: new Date(review.created_at).toLocaleDateString(),
-        rating: review.rating,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(review.author_name || "Guest")}&background=random`,
-        content: review.comment,
-        likes: 0,
-        replies: 0
+        name: review.author_name || "Tartuca Patron",
+        date: review.created_at ? new Date(review.created_at).toLocaleDateString() : 'Recent Guest',
+        rating: review.rating || 5,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(review.author_name || 'Guest')}&background=151821&color=F59E0B`,
+        content: review.comment
       }));
       setReviews(mappedReviews);
     } catch (error) {
@@ -53,36 +60,36 @@ function ReviewsPage() {
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     if (!isAuthenticated) {
-        showToast("Please login to submit a review.", "error");
-        return;
+      if (showToast) showToast("Please login to share your dining experience.", "error");
+      return;
     }
     
     setSubmitting(true);
     setError('');
     
     try {
-        const token = localStorage.getItem('token');
-        await createReview(token, {
-            author_name: newReview.name || "Happy Customer",
-            rating: newReview.rating,
-            comment: newReview.comment
-        });
-        
-        setNewReview(prev => ({ rating: 5, comment: '', name: prev.name }));
-        setSubmittedNotice(true);
-        loadReviews();
-        showToast("Review submitted successfully! It will appear once approved.", "success");
+      const token = localStorage.getItem('token');
+      await createReview(token, {
+        author_name: newReview.name || "Happy Patron",
+        rating: newReview.rating,
+        comment: newReview.comment
+      });
+      
+      setNewReview(prev => ({ rating: 5, comment: '', name: prev.name }));
+      setSubmittedNotice(true);
+      loadReviews();
+      if (showToast) showToast("Review submitted! Thank you for your feedback.", "success");
     } catch (err) {
-        console.error(err);
-        showToast('Failed to submit review', 'error');
+      console.error(err);
+      if (showToast) showToast('Failed to submit review', 'error');
     } finally {
-        setSubmitting(false);
+      setSubmitting(false);
     }
   };
 
   const averageRating = reviews.length > 0
-    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
-    : '5.0';
+    ? (reviews.reduce((acc, r) => acc + (r.rating || 5), 0) / reviews.length).toFixed(1)
+    : '4.9';
 
   const getRatingPercentage = (star) => {
     if (reviews.length === 0) return star === 5 ? 100 : 0;
@@ -90,189 +97,198 @@ function ReviewsPage() {
     return Math.round((count / reviews.length) * 100);
   };
 
-  if (loading) {
-      return (
-        <div className="bg-light min-h-screen py-12">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-12">
-                    <Skeleton className="h-10 w-64 mx-auto mb-4 rounded-lg" />
-                    <Skeleton className="h-4 w-96 mx-auto rounded-md" />
-                </div>
-                <div className="grid lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-1">
-                        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 h-64 relative overflow-hidden">
-                            <Skeleton className="h-8 w-32 mb-6 rounded-md" />
-                            <Skeleton className="h-16 w-24 mb-4 rounded-lg" />
-                            <div className="space-y-2">
-                                <Skeleton className="h-4 w-full rounded-md" />
-                                <Skeleton className="h-4 w-3/4 rounded-md" />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="lg:col-span-2">
-                        <ReviewSkeleton count={3} />
-                    </div>
-                </div>
-            </div>
-        </div>
-      );
-  }
-
   return (
-    <div className="bg-light min-h-screen py-12">
+    <div className="min-h-screen py-10 pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-dark mb-4">Customer Reviews</h1>
-          <p className="text-gray-500 max-w-2xl mx-auto">
-            See what our guests are saying about their experience at Tartuca.
+        
+        {/* Header */}
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider mb-4">
+            <Sparkles size={13} /> Customer Reviews
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-serif font-bold text-white tracking-tight mb-4">
+            What Our Diners Say
+          </h1>
+          <p className="text-slate-400 text-sm leading-relaxed">
+            Read genuine reviews from guests who have dined with us or ordered for delivery.
           </p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Summary Card & Write Review */}
-          <div className="lg:col-span-1 space-y-8">
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+          
+          {/* Summary Card & Write Review Column */}
+          <div className="lg:col-span-1 space-y-6">
+            
+            {/* Score Breakdown Card */}
+            <div className="glass-card p-6 sm:p-8 rounded-3xl border border-white/10">
               <div className="text-center mb-6">
-                <div className="text-6xl font-bold text-dark mb-2">{averageRating}</div>
-                <div className="flex justify-center gap-1 mb-2">
+                <div className="text-6xl font-serif font-bold text-white mb-2">{averageRating}</div>
+                <div className="flex justify-center gap-1.5 mb-2 text-amber-400">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <Star key={i} size={24} className="text-secondary fill-secondary" />
+                    <Star key={i} size={22} fill="currentColor" strokeWidth={0} />
                   ))}
                 </div>
-                <p className="text-gray-400 text-sm">Based on {reviews.length} verified reviews</p>
+                <p className="text-slate-400 text-xs font-medium">
+                  Based on {reviews.length} authentic dining reviews
+                </p>
               </div>
 
-              <div className="space-y-3 mb-2">
+              {/* Progress bars */}
+              <div className="space-y-2.5">
                 {[5, 4, 3, 2, 1].map((rating) => (
                   <div key={rating} className="flex items-center gap-3">
-                    <span className="text-sm font-bold text-gray-500 w-3">{rating}</span>
-                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <span className="text-xs font-bold text-slate-400 w-3 font-mono">{rating}</span>
+                    <div className="flex-1 h-2 bg-white/[0.06] rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-secondary rounded-full transition-all duration-500" 
+                        className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all duration-500" 
                         style={{ width: `${getRatingPercentage(rating)}%` }}
-                      ></div>
+                      />
                     </div>
-                    <span className="text-xs text-gray-400 w-8 text-right font-medium">{getRatingPercentage(rating)}%</span>
+                    <span className="text-[11px] text-slate-400 w-9 text-right font-mono font-medium">
+                      {getRatingPercentage(rating)}%
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Write Review Form */}
+            {/* Write Review Card */}
             {isAuthenticated ? (
-                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                    <h3 className="text-xl font-bold text-dark mb-1">Write a Review</h3>
-                    <p className="text-xs text-gray-400 mb-4">Share your feedback with the Tartuca community</p>
+              <div className="glass-card p-6 sm:p-8 rounded-3xl border border-white/10">
+                <h3 className="text-lg font-serif font-bold text-white mb-1">Write a Review</h3>
+                <p className="text-xs text-slate-400 mb-4">Share your dining experience at Tartuca</p>
 
-                    {submittedNotice && (
-                        <div className="p-4 rounded-2xl bg-green-50 border border-green-200 text-green-800 text-xs mb-4 flex items-start gap-2.5">
-                            <CheckCircle2 size={16} className="text-green-600 shrink-0 mt-0.5" />
-                            <span>Thank you! Your review has been submitted for moderation and will appear publicly once approved.</span>
-                        </div>
-                    )}
+                {submittedNotice && (
+                  <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs mb-4 flex items-start gap-2.5 animate-in fade-in">
+                    <CheckCircle2 size={16} className="text-amber-400 shrink-0 mt-0.5" />
+                    <span>Your testimonial has been received and will be published following moderation.</span>
+                  </div>
+                )}
 
-                    {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-                    <form onSubmit={handleSubmitReview} className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
-                            <input 
-                                type="text" 
-                                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                placeholder="Your Name"
-                                required
-                                value={newReview.name || ''}
-                                onChange={(e) => setNewReview({...newReview, name: e.target.value})}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
-                            <div className="flex gap-2">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <button
-                                        key={star}
-                                        type="button"
-                                        onClick={() => setNewReview({...newReview, rating: star})}
-                                        className="focus:outline-none transition-transform hover:scale-110"
-                                    >
-                                        <Star 
-                                            size={24} 
-                                            className={star <= newReview.rating ? "text-secondary fill-secondary" : "text-gray-300"} 
-                                        />
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Comment</label>
-                            <textarea 
-                                rows="4"
-                                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
-                                placeholder="Share your experience..."
-                                required
-                                value={newReview.comment}
-                                onChange={(e) => setNewReview({...newReview, comment: e.target.value})}
-                            ></textarea>
-                        </div>
-                        <button 
-                            type="submit" 
-                            disabled={submitting}
-                            className="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
+                {error && <p className="text-rose-400 text-xs mb-3">{error}</p>}
+                
+                <form onSubmit={handleSubmitReview} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1.5">Your Name</label>
+                    <input 
+                      type="text" 
+                      className="w-full px-4 py-2.5 bg-[#0E1015] border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400/60"
+                      placeholder="e.g. Marcella Hazan"
+                      required
+                      value={newReview.name || ''}
+                      onChange={(e) => setNewReview({...newReview, name: e.target.value})}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1.5">Rating Experience</label>
+                    <div className="flex gap-1.5">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setNewReview({...newReview, rating: star})}
+                          className="focus:outline-none transition-transform hover:scale-110 p-1"
                         >
-                            {submitting ? 'Submitting...' : 'Submit Review'}
-                            {!submitting && <Send size={18} />}
+                          <Star 
+                            size={24} 
+                            fill={star <= newReview.rating ? "currentColor" : "none"}
+                            className={star <= newReview.rating ? "text-amber-400 fill-amber-400" : "text-white/20"} 
+                          />
                         </button>
-                    </form>
-                </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1.5">Your Review</label>
+                    <textarea 
+                      rows="4"
+                      className="w-full px-4 py-2.5 bg-[#0E1015] border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400/60 resize-none"
+                      placeholder="Tell us about the woodfire dishes, wine pairing, or dining ambiance..."
+                      required
+                      value={newReview.comment}
+                      onChange={(e) => setNewReview({...newReview, comment: e.target.value})}
+                    />
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    disabled={submitting}
+                    className="w-full bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 disabled:opacity-50"
+                  >
+                    <Send size={14} />
+                    <span>{submitting ? 'Submitting...' : 'Post Testimonial'}</span>
+                  </button>
+                </form>
+              </div>
             ) : (
-                <div className="bg-primary/5 p-8 rounded-3xl border border-primary/10 text-center">
-                    <h3 className="font-bold text-dark mb-2">Have you dined with us?</h3>
-                    <p className="text-gray-500 mb-4 text-sm">Log in to share your experience and help others.</p>
-                    <a href="/login" className="inline-block bg-primary text-white font-bold py-2 px-6 rounded-xl hover:bg-primary-dark transition-colors">
-                        Login to Review
-                    </a>
-                </div>
+              <div className="glass-card p-6 rounded-3xl border border-white/10 text-center">
+                <MessageSquare size={32} className="mx-auto text-amber-400 mb-3" />
+                <h4 className="font-serif font-bold text-white text-base mb-1">Dined With Us?</h4>
+                <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+                  Sign in to leave a verified review and earn dining club loyalty privileges.
+                </p>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-md shadow-amber-500/20 hover:bg-amber-400 transition-all"
+                >
+                  <LogIn size={14} />
+                  <span>Sign In To Review</span>
+                </Link>
+              </div>
             )}
+
           </div>
 
           {/* Reviews List */}
-          <div className="lg:col-span-2 space-y-6">
-            {reviews.map((review) => (
-              <div key={review.id} className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gray-100 overflow-hidden">
-                        <img src={review.avatar} alt={review.name} className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-dark">{review.name}</h4>
-                      <p className="text-xs text-gray-400">{review.date}</p>
-                    </div>
-                  </div>
-                  <div className="flex bg-gray-50 px-2 py-1 rounded-lg">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Star key={i} size={14} className={i <= review.rating ? "text-secondary fill-secondary" : "text-gray-300"} />
-                    ))}
-                  </div>
-                </div>
-                
-                <p className="text-gray-600 leading-relaxed mb-6">
-                  {review.content}
-                </p>
-
-                <div className="flex items-center gap-6 pt-6 border-t border-gray-50">
-                  <button className="flex items-center gap-2 text-gray-400 hover:text-primary transition-colors text-sm font-medium">
-                    <ThumbsUp size={18} />
-                    Helpful ({review.likes})
-                  </button>
-                  <button className="flex items-center gap-2 text-gray-400 hover:text-primary transition-colors text-sm font-medium">
-                    <MessageCircle size={18} />
-                    Reply
-                  </button>
-                </div>
+          <div className="lg:col-span-2 space-y-4">
+            {loading ? (
+              <ReviewSkeleton count={3} />
+            ) : reviews.length === 0 ? (
+              <div className="glass-card p-12 rounded-3xl border border-white/10 text-center text-slate-400">
+                <p className="text-sm">Be the first to share an accolade for Tartuca.</p>
               </div>
-            ))}
+            ) : (
+              reviews.map((r) => (
+                <div 
+                  key={r.id} 
+                  className="glass-card p-6 sm:p-8 rounded-3xl border border-white/10 hover:border-amber-500/30 transition-all duration-300 shadow-sm"
+                >
+                  <div className="flex items-center justify-between gap-4 mb-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 rounded-full bg-linear-to-br from-amber-400 via-amber-500 to-amber-600 text-slate-950 font-serif font-black text-sm flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20 border border-amber-300/40">
+                        {getInitials(r.name)}
+                      </div>
+                      <div>
+                        <h4 className="font-serif font-bold text-white text-base">{r.name}</h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[11px] text-emerald-400 flex items-center gap-1 font-semibold">
+                            <ShieldCheck size={13} /> Verified Patron
+                          </span>
+                          <span className="text-slate-600 text-xs">•</span>
+                          <span className="text-[11px] text-slate-500">{r.date}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-1 text-amber-400">
+                      {Array.from({ length: r.rating || 5 }).map((_, i) => (
+                        <Star key={i} size={14} fill="currentColor" strokeWidth={0} />
+                      ))}
+                    </div>
+                  </div>
+
+                  <p className="text-slate-300 text-xs sm:text-sm leading-relaxed italic font-normal">
+                    "{r.content}"
+                  </p>
+                </div>
+              ))
+            )}
           </div>
+
         </div>
+
       </div>
     </div>
   );

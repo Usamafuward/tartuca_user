@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
       window.addEventListener('mousemove', resetTimer);
       window.addEventListener('keypress', resetTimer);
       window.addEventListener('click', resetTimer);
-      window.addEventListener('scroll', resetTimer);
+      window.addEventListener('scroll', resetTimer, true);
     }
 
     return () => {
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
       window.removeEventListener('mousemove', resetTimer);
       window.removeEventListener('keypress', resetTimer);
       window.removeEventListener('click', resetTimer);
-      window.removeEventListener('scroll', resetTimer);
+      window.removeEventListener('scroll', resetTimer, true);
     };
   }, [isAuthenticated, logout]);
 
