@@ -3,10 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { fetchUserProfile, updateUserProfile, fetchUserOrders, fetchUserReservations } from '../services/api';
 import { User, Mail, Phone, MapPin, LogOut, Package, Calendar, Clock, Users, Utensils, ChevronDown, ChevronUp, Sparkles, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
 
 function ProfilePage() {
     const navigate = useNavigate();
     const { logout } = useAuth();
+    const { formatPrice } = useSettings();
     const [user, setUser] = useState({
         full_name: '',
         email: '',
@@ -272,7 +274,7 @@ function ProfilePage() {
                                                 
                                                 <div className="flex items-center gap-6">
                                                     <div className="text-right">
-                                                        <p className="font-sans font-extrabold text-amber-400 text-base">${Number(order.total_amount).toFixed(2)}</p>
+                                                        <p className="font-sans font-extrabold text-amber-400 text-base">{formatPrice(order.total_amount)}</p>
                                                         <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide mt-0.5 ${getStatusColor(order.status)}`}>
                                                             {order.status}
                                                         </span>
@@ -295,13 +297,13 @@ function ProfilePage() {
                                                                         {item.menu_item?.name || item.special_offer?.title || `Dish #${item.menu_item_id || item.special_offer_id}`}
                                                                     </span>
                                                                 </div>
-                                                                <span className="font-mono font-bold text-amber-400">${Number(item.unit_price).toFixed(2)}</span>
+                                                                <span className="font-mono font-bold text-amber-400">{formatPrice(item.unit_price)}</span>
                                                             </div>
                                                         ))}
                                                     </div>
                                                     <div className="mt-4 pt-4 border-t border-white/[0.06] flex justify-between text-sm items-center">
                                                         <span className="text-slate-400 font-medium text-xs">Total Amount</span>
-                                                        <span className="font-sans font-extrabold text-amber-400 text-lg">${Number(order.total_amount).toFixed(2)}</span>
+                                                        <span className="font-sans font-extrabold text-amber-400 text-lg">{formatPrice(order.total_amount)}</span>
                                                     </div>
                                                 </div>
                                             )}

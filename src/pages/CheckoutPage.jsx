@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { CreditCard, Wallet, Banknote, Lock, ChevronRight, Minus, Plus, Trash2, Check, ShoppingBag, ShieldCheck, ArrowRight, Utensils } from 'lucide-react';
-import { createOrder, fetchUserProfile, fetchRestaurantSettings } from '../services/api';
+import { createOrder, fetchUserProfile } from '../services/api';
 import { useCart } from '../context/CartContext';
+import { useSettings } from '../context/SettingsContext';
 import { Link, useNavigate } from 'react-router-dom';
 
 function CheckoutPage() {
   const navigate = useNavigate();
   const { cartItems, updateQuantity, removeFromCart, getCartTotal, clearCart } = useCart();
+  const { settings, formatPrice } = useSettings();
   const [paymentMethod, setPaymentMethod] = useState('cash'); // Default to cash
   const [formData, setFormData] = useState({
     firstName: '',
@@ -19,9 +21,10 @@ function CheckoutPage() {
   });
   const [status, setStatus] = useState('idle');
   const [placedOrder, setPlacedOrder] = useState(null);
-  const [deliveryFee, setDeliveryFee] = useState(2.99);
+  
+  const deliveryFee = Number(settings.delivery_fee) || 350.0;
 
-  // Autofill user profile and fetch restaurant settings
+  // Autofill user profile
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -41,14 +44,6 @@ function CheckoutPage() {
         })
         .catch(err => console.log('Could not load profile for checkout', err));
     }
-
-    fetchRestaurantSettings()
-      .then(settings => {
-        if (settings && settings.delivery_fee !== undefined) {
-          setDeliveryFee(Number(settings.delivery_fee));
-        }
-      })
-      .catch(err => console.log('Could not load settings for delivery fee', err));
   }, []);
 
   const subtotal = getCartTotal();
@@ -113,7 +108,7 @@ function CheckoutPage() {
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-500 uppercase tracking-wider font-semibold">Total Amount</span>
-                <span className="font-sans font-bold text-white text-base">${Number(placedOrder.total_amount).toFixed(2)}</span>
+                <span className="font-sans font-bold text-white text-base">{formatPrice(placedOrder.total_amount)}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-500 uppercase tracking-wider font-semibold">Payment Method</span>
@@ -314,7 +309,7 @@ function CheckoutPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-semibold text-white text-xs truncate">{item.name}</h4>
-                        <span className="font-mono text-amber-400 text-xs font-bold">${(item.price * item.quantity).toFixed(2)}</span>
+                        <span className="font-mono text-amber-400 text-xs font-bold">{formatPrice(item.price * item.quantity)}</span>
                       </div>
                       
                       {/* Quantity stepper */}
@@ -352,19 +347,19 @@ function CheckoutPage() {
               <div className="space-y-2.5 pt-4 border-t border-white/[0.08] mb-6 text-xs">
                 <div className="flex justify-between text-slate-400">
                   <span>Subtotal</span>
-                  <span className="font-mono font-semibold text-slate-200">${subtotal.toFixed(2)}</span>
+                  <span className="font-mono font-semibold text-slate-200">{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-slate-400">
                   <span>Delivery Fee</span>
-                  <span className="font-mono font-semibold text-slate-200">${deliveryFee.toFixed(2)}</span>
+                  <span className="font-mono font-semibold text-slate-200">{formatPrice(deliveryFee)}</span>
                 </div>
                 <div className="flex justify-between text-slate-400">
                   <span>Taxes & Service (8%)</span>
-                  <span className="font-mono font-semibold text-slate-200">${tax.toFixed(2)}</span>
+                  <span className="font-mono font-semibold text-slate-200">{formatPrice(tax)}</span>
                 </div>
                 <div className="flex justify-between text-base font-bold text-white pt-3 border-t border-white/[0.08]">
                   <span className="font-serif">Grand Total</span>
-                  <span className="font-mono text-amber-400 font-extrabold text-lg">${total.toFixed(2)}</span>
+                  <span className="font-mono text-amber-400 font-extrabold text-lg">{formatPrice(total)}</span>
                 </div>
               </div>
 

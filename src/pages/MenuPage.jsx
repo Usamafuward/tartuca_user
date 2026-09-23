@@ -8,8 +8,10 @@ import { MenuItemSkeleton } from '../components/common/Skeleton';
 import { fetchMenuItems, fetchCategories, fetchSpecialOffers, API_URL } from '../services/api';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import { useSettings } from '../context/SettingsContext';
 
 function MenuPage() {
+  const { currencySymbol, formatPrice } = useSettings();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialCategory = searchParams.get('category') || 'all';
 
@@ -21,7 +23,7 @@ function MenuPage() {
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('recommended');
-  const [priceRange, setPriceRange] = useState(150);
+  const [priceRange, setPriceRange] = useState(10000);
   const [isVegetarianOnly, setIsVegetarianOnly] = useState(false);
   const [isGlutenFreeOnly, setIsGlutenFreeOnly] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -82,8 +84,12 @@ function MenuPage() {
         }));
         setSpecialOffers(mappedOffers);
 
-        const maxP = mappedItems.reduce((acc, curr) => Math.max(acc, Number(curr.price) || 0), 60);
-        setPriceRange(Math.ceil(maxP) || 120);
+        const maxP = Math.max(
+          ...mappedItems.map(i => Number(i.price) || 0),
+          ...mappedOffers.map(o => Number(o.price) || 0),
+          100
+        );
+        setPriceRange(Math.ceil(maxP));
 
         setCategories([
           { id: 'all', name: 'All Dishes', slug: 'all' },
@@ -140,6 +146,20 @@ function MenuPage() {
     }
     setSearchParams(newParams, { preventScrollReset: true });
   };
+
+  const maxPossiblePrice = useMemo(() => {
+    const list = menuType === 'specials' ? specialOffers : menuItems;
+    if (!list || list.length === 0) return 5000;
+    const max = list.reduce((acc, curr) => Math.max(acc, Number(curr.price) || 0), 0);
+    return Math.ceil(max) || 5000;
+  }, [menuType, specialOffers, menuItems]);
+
+  // Ensure Price Ceiling value starts at the highest menu price first
+  useEffect(() => {
+    if (maxPossiblePrice > 0) {
+      setPriceRange(maxPossiblePrice);
+    }
+  }, [maxPossiblePrice]);
 
   // Filtered dishes
   const filteredItems = useMemo(() => {
@@ -216,19 +236,20 @@ function MenuPage() {
           <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-300">
             Price Ceiling
           </h3>
-          <span className="text-amber-400 font-extrabold text-sm font-sans">${priceRange}</span>
+          <span className="text-amber-400 font-extrabold text-sm font-sans">{formatPrice(priceRange)}</span>
         </div>
         <input 
           type="range" 
-          min="5" 
-          max="150" 
-          value={priceRange} 
+          min="0" 
+          max={maxPossiblePrice} 
+          step={maxPossiblePrice > 500 ? 50 : 1}
+          value={Math.min(priceRange, maxPossiblePrice)} 
           onChange={(e) => setPriceRange(Number(e.target.value))}
           className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-amber-500"
         />
         <div className="flex justify-between text-[10px] text-slate-500 mt-2 font-mono">
-          <span>$5</span>
-          <span>$150+</span>
+          <span>{formatPrice(0)}</span>
+          <span>{formatPrice(maxPossiblePrice)}</span>
         </div>
       </div>
 
@@ -509,7 +530,7 @@ function MenuPage() {
                 {menuType === 'specials' 
                   ? "Chef's Specials & Seasonal Creations"
                   : activeCategory === 'all' 
-                  ? 'All A La Carte Dishes' 
+                  ? 'All Dishes' 
                   : categories.find(c => String(c.id) === String(activeCategory))?.name || 'Menu Selections'}
               </h2>
               <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">
@@ -597,7 +618,7 @@ function MenuPage() {
                     {/* Price & Add to Order action */}
                     <div className="px-5 pb-5 pt-2 flex items-center justify-between border-t border-white/[0.06]">
                       <span className="text-lg font-extrabold text-amber-400 font-sans">
-                        ${Number(item.price).toFixed(2)}
+                        {formatPrice(item.price)}
                       </span>
                       <button 
                         onClick={() => handleAddToCart(item)}

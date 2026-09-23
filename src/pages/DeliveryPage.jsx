@@ -1,34 +1,40 @@
 import { MapPin, Clock, Truck, ShieldCheck, Sparkles, Flame, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useSettings } from '../context/SettingsContext';
 
 function DeliveryPage() {
+  const { settings, formatPrice } = useSettings();
+
+  const baseFee = Number(settings.delivery_fee) || 350;
+  const minTime = settings.min_delivery_time || 25;
+  const maxTime = settings.max_delivery_time || 45;
 
   const deliveryZones = [
     {
       zone: 'Zone 1: Central Colombo',
       coverage: 'Colombo 03 (Kollupitiya), Colombo 07 (Cinnamon Gardens), Colombo 04 (Bambalapitiya)',
       distance: '0 – 3 km from Tartuca',
-      price: '$1.99',
-      freeThreshold: 'Free over $35',
-      time: '20–30 min',
+      price: formatPrice(baseFee),
+      freeThreshold: 'Priority Courier',
+      time: `${minTime}–${Math.round(minTime + (maxTime - minTime) * 0.4)} min`,
       popular: true,
     },
     {
       zone: 'Zone 2: Inner Colombo',
       coverage: 'Colombo 01 (Fort), Colombo 02 (Slave Island), Colombo 05 (Havelock), Colombo 06 (Wellawatte)',
       distance: '3 – 6 km from Tartuca',
-      price: '$2.99',
-      freeThreshold: 'Free over $45',
-      time: '25–35 min',
+      price: formatPrice(Math.round(baseFee * 1.25)),
+      freeThreshold: 'Standard Courier',
+      time: `${Math.round(minTime + (maxTime - minTime) * 0.3)}–${Math.round(minTime + (maxTime - minTime) * 0.7)} min`,
       popular: false,
     },
     {
       zone: 'Zone 3: Greater Colombo',
       coverage: 'Colombo 08 (Borella), Rajagiriya, Nawala, Nugegoda, Dehiwala',
       distance: '6 – 10 km from Tartuca',
-      price: '$3.99',
-      freeThreshold: 'Free over $55',
-      time: '35–45 min',
+      price: formatPrice(Math.round(baseFee * 1.5)),
+      freeThreshold: 'Extended Courier',
+      time: `${Math.round(minTime + (maxTime - minTime) * 0.5)}–${maxTime} min`,
       popular: false,
     }
   ];
@@ -118,7 +124,7 @@ function DeliveryPage() {
                 </div>
                 <div>
                   <p className="font-serif font-bold text-white text-sm">Central Kitchen Hub</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Average dispatch time: 30 mins • Free delivery on orders over $50</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Average dispatch time: {minTime}–{maxTime} mins • Fast insulated hot delivery</p>
                 </div>
               </div>
             </div>
@@ -188,7 +194,7 @@ function DeliveryPage() {
               Ready to Order Delicious Food?
             </h2>
             <p className="text-xs sm:text-sm text-stone-600 dark:text-slate-300 max-w-md mx-auto leading-relaxed font-normal">
-              Browse our menu of freshly prepared curries, seafood specialties, woodfired pizzas, and desserts. Delivered warm and fresh in 25–45 minutes.
+              Browse our menu of freshly prepared curries, seafood specialties, woodfired pizzas, and desserts. Delivered warm and fresh in {minTime}–{maxTime} minutes.
             </p>
             <div className="pt-2 flex flex-col sm:flex-row justify-center gap-3">
               <Link

@@ -1,64 +1,117 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from './ToastContext';
 
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
-export const AuthProvider = ({ children }) => {
-  const { showToast } = useToast();
-  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
+const INACTIVITY_LIMIT_MS = 30 * 60 * 1000; // 30 minutes
 
-  const login = (token) => {
-    localStorage.setItem('token', token);
-    setIsAuthenticated(true);
-    showToast("Logged in successfully", "success");
-  };
+export const AuthProvider = ({ children }) => {
+  const { showToast } = useToast?.() || { showToast: () => {} };
+
+  // Check initial token and expiration
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const token = localStorage.getItem('token');
+    const lastActive = localStorage.getItem('lastActivityTime');
+    if (!token) return false;
+    if (lastActive && Date.now() - Number(lastActive) > INACTIVITY_LIMIT_MS) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('lastActivityTime');
+      return false;
+    }
+    return true;
+  });
+
+  const lastRecordedActivityRef = useRef(Date.now());
 
   const logout = useCallback((message = "Logged out successfully") => {
     localStorage.removeItem('token');
+    localStorage.removeItem('lastActivityTime');
     setIsAuthenticated(false);
-    showToast(message, "info");
+    if (showToast) {
+      showToast(message, "info");
+    }
   }, [showToast]);
 
-  // Inactivity Logic
-  useEffect(() => {
-    let timeout;
-    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 minutes
+  const login = (token) => {
+    const now = Date.now();
+    localStorage.setItem('token', token);
+    localStorage.setItem('lastActivityTime', now.toString());
+    lastRecordedActivityRef.current = now;
+    setIsAuthenticated(true);
+    if (showToast) {
+      showToast("Logged in successfully", "success");
+    }
+  };
 
-    const resetTimer = () => {
-      if (isAuthenticated) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          // Clear token and state, then redirect
-          logout("Session expired due to inactivity");
-          window.location.href = '/login';
-        }, INACTIVITY_LIMIT);
+  // Record user activity with throttling (at most once every 5 seconds)
+  const recordActivity = useCallback(() => {
+    const now = Date.now();
+    if (now - lastRecordedActivityRef.current > 5000) {
+      lastRecordedActivityRef.current = now;
+      localStorage.setItem('lastActivityTime', now.toString());
+    }
+  }, []);
+
+  // 30-Minute Inactivity Monitor
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    // Check if session has already expired
+    const checkExpiration = () => {
+      const storedTime = Number(localStorage.getItem('lastActivityTime')) || lastRecordedActivityRef.current;
+      if (Date.now() - storedTime >= INACTIVITY_LIMIT_MS) {
+        logout("Session expired due to inactivity. Please log in again.");
       }
     };
 
-    if (isAuthenticated) {
-      resetTimer(); // Set initial timer
-      
-      // Events to track activity
-      window.addEventListener('mousemove', resetTimer);
-      window.addEventListener('keypress', resetTimer);
-      window.addEventListener('click', resetTimer);
-      window.addEventListener('scroll', resetTimer, true);
-    }
+    checkExpiration();
+
+    // Interaction event listeners
+    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'];
+    const handleUserInteraction = () => {
+      recordActivity();
+    };
+
+    events.forEach(eventName => {
+      window.addEventListener(eventName, handleUserInteraction, { passive: true });
+    });
+
+    // Check every 10 seconds
+    const intervalId = setInterval(checkExpiration, 10000);
+
+    // Also check when tab becomes visible after being in background or computer wake
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkExpiration();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Cross-tab logout listener
+    const handleStorageChange = (e) => {
+      if (e.key === 'token' && !e.newValue) {
+        setIsAuthenticated(false);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
 
     return () => {
-      if (timeout) clearTimeout(timeout);
-      window.removeEventListener('mousemove', resetTimer);
-      window.removeEventListener('keypress', resetTimer);
-      window.removeEventListener('click', resetTimer);
-      window.removeEventListener('scroll', resetTimer, true);
+      events.forEach(eventName => {
+        window.removeEventListener(eventName, handleUserInteraction);
+      });
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('storage', handleStorageChange);
     };
-  }, [isAuthenticated, logout]);
+  }, [isAuthenticated, logout, recordActivity]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout, recordActivity }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
+export default AuthContext;

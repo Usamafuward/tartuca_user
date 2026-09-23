@@ -12,10 +12,12 @@ import {
 import { Skeleton, CategorySkeleton, MenuItemSkeleton } from '../components/common/Skeleton';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import { useSettings } from '../context/SettingsContext';
 
 function HomePage() {
   const { addToCart } = useCart();
   const { showToast } = useToast?.() || { showToast: () => {} };
+  const { settings, formatPrice } = useSettings();
   
   const getInitials = (name = '') => {
     const clean = name.trim();
@@ -260,7 +262,9 @@ function HomePage() {
                 {/* Floating Highlight Badge 2: Delivery Speed */}
                 <div className="absolute top-4 -right-2 bg-white/95 dark:bg-[#0F1117]/95 backdrop-blur-xl p-3 px-4 rounded-2xl shadow-2xl border border-stone-200/80 dark:border-white/10 flex items-center gap-2.5 z-20">
                   <Clock size={16} className="text-amber-500 dark:text-amber-400" />
-                  <span className="text-xs font-bold text-stone-800 dark:text-slate-200">Delivery: 25-35 min</span>
+                  <span className="text-xs font-bold text-stone-800 dark:text-slate-200">
+                    Delivery: {settings.min_delivery_time || 25}-{settings.max_delivery_time || 45} min
+                  </span>
                 </div>
 
               </div>
@@ -342,7 +346,7 @@ function HomePage() {
 
                     <div className="flex items-center justify-between pt-3 border-t border-stone-200/80 dark:border-white/[0.08]">
                       <span className="text-xl font-extrabold text-amber-600 dark:text-amber-400 font-sans">
-                        ${item.price.toFixed(2)}
+                        {formatPrice(item.price)}
                       </span>
                       
                       <button 

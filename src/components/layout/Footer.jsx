@@ -1,32 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, Instagram, Facebook, Twitter, Clock, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { fetchRestaurantSettings } from '../../services/api';
+import { useSettings } from '../../context/SettingsContext';
 
 function Footer() {
-  const [settings, setSettings] = useState({
-    name: 'Tartuca',
-    phone: '+94 11 257 4820',
-    email: 'info@tartuca.lk',
-    address: '42 Green Path (Ananda Coomaraswamy Mw), Colombo 07, Sri Lanka'
-  });
+  const { settings } = useSettings();
   const [emailSubscribed, setEmailSubscribed] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState('');
-
-  useEffect(() => {
-    fetchRestaurantSettings()
-      .then(data => {
-        if (data) {
-          setSettings(prev => ({
-            name: data.name || prev.name,
-            phone: data.phone || prev.phone,
-            email: data.email || prev.email,
-            address: data.address || prev.address
-          }));
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   const handleSubscribe = (e) => {
     e.preventDefault();
@@ -139,9 +119,8 @@ function Footer() {
               <div className="pt-2 border-t border-white/[0.06] flex items-start gap-3">
                 <Clock size={18} className="text-amber-400 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-white text-xs font-semibold">Lunch Service: 12:00 – 15:30</p>
-                  <p className="text-white text-xs font-semibold">Dinner Service: 18:00 – 23:30</p>
-                  <p className="text-slate-500 text-[11px] mt-0.5">Open Tuesday – Sunday</p>
+                  <p className="text-white text-xs font-semibold">{settings.opening_hours || 'Mon-Sun: 11:30 AM - 11:00 PM'}</p>
+                  <p className="text-slate-500 text-[11px] mt-0.5">Kitchen & Dine-in Service</p>
                 </div>
               </div>
             </div>
