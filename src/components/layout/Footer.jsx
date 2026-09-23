@@ -37,11 +37,15 @@ function Footer() {
           {/* Column 1: Brand & Philosophy */}
           <div>
             <Link to="/" className="flex items-center gap-3 mb-6 group inline-flex">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center text-slate-950 font-serif font-black text-xl shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform duration-200">
-                T
+              <div className="relative w-12 h-12">
+                <img 
+                  src="/tartuca-favicon.png" 
+                  alt="Tartuca Emblem" 
+                  className="w-full h-full object-cover" 
+                />
               </div>
-              <span className="text-2xl font-serif font-bold tracking-tight text-white">
-                Tar<span className="text-amber-400">tuca</span>
+              <span className="text-3xl font-serif font-bold tracking-tight text-white">
+                Tar<span className="text-[#C47A16]">tuca</span>
               </span>
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed mb-6 font-normal">

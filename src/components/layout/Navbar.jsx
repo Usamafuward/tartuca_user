@@ -30,21 +30,20 @@ function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--app-nav-bg)] backdrop-blur-xl border-b border-[var(--app-nav-border)] transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          
+
           {/* Brand Monogram & Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center text-slate-950 font-serif font-black text-xl shadow-md shadow-amber-500/25 group-hover:scale-105 transition-transform duration-200">
-                T
+              <div className="relative w-10 h-10 sm:w-12 sm:h-12">
+                <img
+                  src="/tartuca-favicon.png"
+                  alt="Tartuca Emblem"
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <div className="flex flex-col">
-                <span className="text-xl sm:text-2xl font-serif font-bold tracking-tight text-white">
-                  Tar<span className="text-amber-400">tuca</span>
-                </span>
-                <span className="text-[9px] tracking-[0.25em] uppercase text-amber-500 font-semibold -mt-1">
-                  Artisanal Cuisine
-                </span>
-              </div>
+              <span className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-white">
+                Tar<span className="text-[#C47A16]">tuca</span>
+              </span>
             </Link>
           </div>
 
@@ -56,11 +55,10 @@ function Navbar() {
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`relative px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
-                    active
+                  className={`relative px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${active
                       ? 'text-amber-400 bg-amber-500/10 shadow-xs'
                       : 'text-slate-400 hover:text-white hover:bg-white/[0.05]'
-                  }`}
+                    }`}
                 >
                   {link.name}
                   {active && (
@@ -73,7 +71,7 @@ function Navbar() {
 
           {/* Right Action Icons & CTA */}
           <div className="hidden md:flex items-center gap-3">
-            
+
             {/* Theme Toggle Button (Dark / Light, defaults to system) */}
             <button
               onClick={toggleTheme}
@@ -89,8 +87,8 @@ function Navbar() {
             </button>
 
             {/* Cart Pill */}
-            <Link 
-              to="/cart" 
+            <Link
+              to="/cart"
               className="relative p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:text-amber-400 hover:border-amber-500/30 hover:bg-white/[0.08] transition-all duration-200 group"
               title="View Cart"
             >
@@ -104,16 +102,16 @@ function Navbar() {
 
             {/* User Profile / Login */}
             {isAuthenticated ? (
-              <Link 
-                to="/profile" 
+              <Link
+                to="/profile"
                 className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:text-white hover:border-white/20 transition-all text-xs font-semibold"
               >
                 <User size={15} className="text-amber-400" />
                 <span>Profile</span>
               </Link>
             ) : (
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:text-white hover:border-white/20 transition-all text-xs font-semibold"
               >
                 <LogIn size={15} className="text-amber-400" />
@@ -142,8 +140,8 @@ function Navbar() {
               {isDark ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-slate-700" />}
             </button>
 
-            <Link 
-              to="/cart" 
+            <Link
+              to="/cart"
               className="relative p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:text-amber-400 transition-colors"
             >
               <ShoppingBag size={19} />
@@ -153,7 +151,7 @@ function Navbar() {
                 </span>
               )}
             </Link>
-            
+
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:text-white focus:outline-none"
@@ -177,11 +175,10 @@ function Navbar() {
                   key={link.name}
                   to={link.path}
                   onClick={() => setIsOpen(false)}
-                  className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
-                    active
+                  className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${active
                       ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                       : 'text-slate-400 hover:bg-white/[0.05] hover:text-white'
-                  }`}
+                    }`}
                 >
                   <span>{link.name}</span>
                   {active && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}

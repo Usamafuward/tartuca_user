@@ -39,13 +39,17 @@ function LoginPage() {
       {/* Left Side - Form */}
       <div className="w-full lg:w-1/2 p-8 sm:p-12 flex flex-col justify-center">
         <div className="max-w-sm mx-auto w-full">
-          <div className="mb-8">
+          <div className="mb-8 text-center flex flex-col items-center">
             <Link to="/" className="inline-flex items-center gap-2 mb-6 group">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center text-slate-950 font-serif font-black text-sm shadow-md">
-                T
+              <div className="relative w-16 h-16">
+                <img 
+                  src="/tartuca-favicon.png" 
+                  alt="Tartuca Emblem" 
+                  className="w-full h-full object-cover" 
+                />
               </div>
-              <span className="text-xl font-serif font-bold text-white">
-                Tar<span className="text-amber-400">tuca</span>
+              <span className="text-3xl font-serif font-bold text-white">
+                Tar<span className="text-[#C47A16]">tuca</span>
               </span>
             </Link>
             <h1 className="text-3xl font-serif font-bold text-white mb-2">Welcome Back</h1>
