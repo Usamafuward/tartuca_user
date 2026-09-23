@@ -72,9 +72,7 @@ function AboutPage() {
         </div>
 
         {/* Milestone Stats */}
-        <div className="glass-card rounded-3xl p-10 sm:p-12 overflow-hidden border border-amber-500/25 dark:border-amber-500/30 bg-gradient-to-r from-[#FFFDF8] via-[#F6EFE3] to-[#EDE3D0] dark:from-[#141720] dark:via-[#1A1E29] dark:to-[#141720] grid sm:grid-cols-3 gap-8 text-center mb-24 shadow-2xl">
-          <div className="absolute -top-24 -left-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="glass-card rounded-3xl p-10 sm:p-12 border border-stone-200/80 dark:border-white/10 grid sm:grid-cols-3 gap-8 text-center mb-24 shadow-2xl">
           <div>
             <div className="w-14 h-14 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-2xl border border-amber-500/30 flex items-center justify-center mx-auto mb-4">
               <Users size={28} />
