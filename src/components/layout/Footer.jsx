@@ -26,7 +26,7 @@ function Footer() {
   ];
 
   return (
-    <footer className="relative bg-[var(--app-footer-bg)] text-slate-300 pt-20 pb-12 border-t border-[var(--app-footer-border)] overflow-hidden transition-colors duration-250 shrink-0">
+    <footer className="relative bg-[var(--app-footer-bg)] text-slate-300 pt-16 sm:pt-20 pb-12 border-t border-[var(--app-footer-border)] overflow-hidden transition-colors duration-250 shrink-0">
       {/* Top subtle golden light leak */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
       <div className="absolute top-0 left-1/4 w-96 h-32 bg-amber-500/[0.02] blur-3xl pointer-events-none" />

@@ -109,7 +109,7 @@ export const ReviewSkeleton = ({ count = 3 }) => {
   return (
     <div className="space-y-6">
       {Array(count).fill(0).map((_, i) => (
-        <div key={i} className="glass-card p-6 sm:p-8 rounded-3xl border border-white/10">
+        <div key={i} className="glass-card p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl border border-white/10">
            <div className="flex items-center gap-4 mb-4">
               <Skeleton className="w-12 h-12 rounded-full" />
               <div className="space-y-2">

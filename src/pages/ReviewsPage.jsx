@@ -5,12 +5,14 @@ import { Skeleton, ReviewSkeleton } from '../components/common/Skeleton';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Link } from 'react-router-dom';
+import UserAvatar from '../components/common/UserAvatar';
 
 function ReviewsPage() {
   const { isAuthenticated } = useAuth();
   const { showToast } = useToast?.() || { showToast: () => {} };
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState(null);
   const [newReview, setNewReview] = useState({ rating: 5, comment: '', name: '' });
   const [submitting, setSubmitting] = useState(false);
   const [submittedNotice, setSubmittedNotice] = useState(false);
@@ -22,8 +24,11 @@ function ReviewsPage() {
     if (token) {
       fetchUserProfile(token)
         .then(profile => {
-          if (profile && profile.full_name) {
-            setNewReview(prev => ({ ...prev, name: profile.full_name }));
+          if (profile) {
+            setUserProfile(profile);
+            if (profile.full_name) {
+              setNewReview(prev => ({ ...prev, name: profile.full_name }));
+            }
           }
         })
         .catch(() => {});
@@ -46,7 +51,7 @@ function ReviewsPage() {
         name: review.author_name || "Tartuca Patron",
         date: review.created_at ? new Date(review.created_at).toLocaleDateString() : 'Recent Guest',
         rating: review.rating || 5,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(review.author_name || 'Guest')}&background=151821&color=F59E0B`,
+        avatar: review.profile_picture || null,
         content: review.comment
       }));
       setReviews(mappedReviews);
@@ -70,7 +75,8 @@ function ReviewsPage() {
     try {
       const token = localStorage.getItem('token');
       await createReview(token, {
-        author_name: newReview.name || "Happy Patron",
+        author_name: newReview.name || userProfile?.full_name || "Happy Patron",
+        profile_picture: userProfile?.profile_picture || null,
         rating: newReview.rating,
         comment: newReview.comment
       });
@@ -98,34 +104,34 @@ function ReviewsPage() {
   };
 
   return (
-    <div className="min-h-screen py-10 pb-24">
+    <div className="min-h-screen py-6 sm:py-10 pb-20 sm:pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider mb-4">
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider mb-3 sm:mb-4">
             <Sparkles size={13} /> Customer Reviews
           </div>
-          <h1 className="text-4xl sm:text-5xl font-serif font-bold text-white tracking-tight mb-4">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white tracking-tight mb-3">
             What Our Diners Say
           </h1>
-          <p className="text-slate-400 text-sm leading-relaxed">
+          <p className="text-slate-400 text-xs sm:text-sm leading-relaxed max-w-lg mx-auto">
             Read genuine reviews from guests who have dined with us or ordered for delivery.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
           
           {/* Summary Card & Write Review Column */}
           <div className="lg:col-span-1 space-y-6">
             
             {/* Score Breakdown Card */}
-            <div className="glass-card p-6 sm:p-8 rounded-3xl border border-white/10">
+            <div className="glass-card p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-white/10">
               <div className="text-center mb-6">
-                <div className="text-6xl font-serif font-bold text-white mb-2">{averageRating}</div>
+                <div className="text-5xl sm:text-6xl font-serif font-bold text-white mb-2">{averageRating}</div>
                 <div className="flex justify-center gap-1.5 mb-2 text-amber-400">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <Star key={i} size={22} fill="currentColor" strokeWidth={0} />
+                    <Star key={i} size={20} fill="currentColor" strokeWidth={0} />
                   ))}
                 </div>
                 <p className="text-slate-400 text-xs font-medium">
@@ -136,7 +142,7 @@ function ReviewsPage() {
               {/* Progress bars */}
               <div className="space-y-2.5">
                 {[5, 4, 3, 2, 1].map((rating) => (
-                  <div key={rating} className="flex items-center gap-3">
+                  <div key={rating} className="flex items-center gap-2.5 sm:gap-3">
                     <span className="text-xs font-bold text-slate-400 w-3 font-mono">{rating}</span>
                     <div className="flex-1 h-2 bg-white/[0.06] rounded-full overflow-hidden">
                       <div 
@@ -154,12 +160,22 @@ function ReviewsPage() {
 
             {/* Write Review Card */}
             {isAuthenticated ? (
-              <div className="glass-card p-6 sm:p-8 rounded-3xl border border-white/10">
-                <h3 className="text-lg font-serif font-bold text-white mb-1">Write a Review</h3>
-                <p className="text-xs text-slate-400 mb-4">Share your dining experience at Tartuca</p>
+              <div className="glass-card p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-white/10">
+                <div className="flex items-center gap-3 mb-4">
+                  <UserAvatar 
+                    src={userProfile?.profile_picture} 
+                    name={userProfile?.full_name || newReview.name || 'You'} 
+                    size="md" 
+                    className="w-10 h-10 text-xs"
+                  />
+                  <div>
+                    <h3 className="text-base sm:text-lg font-serif font-bold text-white leading-tight">Write a Review</h3>
+                    <p className="text-[11px] sm:text-xs text-slate-400">Share your dining experience at Tartuca</p>
+                  </div>
+                </div>
 
                 {submittedNotice && (
-                  <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs mb-4 flex items-start gap-2.5 animate-in fade-in">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs mb-4 flex items-start gap-2.5 animate-in fade-in">
                     <CheckCircle2 size={16} className="text-amber-400 shrink-0 mt-0.5" />
                     <span>Your testimonial has been received and will be published following moderation.</span>
                   </div>
@@ -172,7 +188,7 @@ function ReviewsPage() {
                     <label className="block text-xs font-semibold text-slate-400 mb-1.5">Your Name</label>
                     <input 
                       type="text" 
-                      className="w-full px-4 py-2.5 bg-[#0E1015] border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400/60"
+                      className="w-full px-3.5 sm:px-4 py-2.5 bg-[#0E1015] border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400/60"
                       placeholder="e.g. Marcella Hazan"
                       required
                       value={newReview.name || ''}
@@ -182,7 +198,7 @@ function ReviewsPage() {
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-400 mb-1.5">Rating Experience</label>
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-1 sm:gap-1.5 flex-wrap">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
                           key={star}
@@ -191,7 +207,7 @@ function ReviewsPage() {
                           className="focus:outline-none transition-transform hover:scale-110 p-1"
                         >
                           <Star 
-                            size={24} 
+                            size={22} 
                             fill={star <= newReview.rating ? "currentColor" : "none"}
                             className={star <= newReview.rating ? "text-amber-400 fill-amber-400" : "text-white/20"} 
                           />
@@ -204,7 +220,7 @@ function ReviewsPage() {
                     <label className="block text-xs font-semibold text-slate-400 mb-1.5">Your Review</label>
                     <textarea 
                       rows="4"
-                      className="w-full px-4 py-2.5 bg-[#0E1015] border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400/60 resize-none"
+                      className="w-full px-3.5 sm:px-4 py-2.5 bg-[#0E1015] border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400/60 resize-none"
                       placeholder="Tell us about the woodfire dishes, wine pairing, or dining ambiance..."
                       required
                       value={newReview.comment}
@@ -223,15 +239,15 @@ function ReviewsPage() {
                 </form>
               </div>
             ) : (
-              <div className="glass-card p-6 rounded-3xl border border-white/10 text-center">
-                <MessageSquare size={32} className="mx-auto text-amber-400 mb-3" />
+              <div className="glass-card p-5 sm:p-6 rounded-2xl sm:rounded-3xl border border-white/10 text-center">
+                <MessageSquare size={30} className="mx-auto text-amber-400 mb-3" />
                 <h4 className="font-serif font-bold text-white text-base mb-1">Dined With Us?</h4>
                 <p className="text-xs text-slate-400 mb-4 leading-relaxed">
                   Sign in to leave a verified review and earn dining club loyalty privileges.
                 </p>
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-md shadow-amber-500/20 hover:bg-amber-400 transition-all"
+                  className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-md shadow-amber-500/20 hover:bg-amber-400 transition-all"
                 >
                   <LogIn size={14} />
                   <span>Sign In To Review</span>
@@ -246,40 +262,43 @@ function ReviewsPage() {
             {loading ? (
               <ReviewSkeleton count={3} />
             ) : reviews.length === 0 ? (
-              <div className="glass-card p-12 rounded-3xl border border-white/10 text-center text-slate-400">
+              <div className="glass-card p-8 sm:p-12 rounded-2xl sm:rounded-3xl border border-white/10 text-center text-slate-400">
                 <p className="text-sm">Be the first to share an accolade for Tartuca.</p>
               </div>
             ) : (
               reviews.map((r) => (
                 <div 
                   key={r.id} 
-                  className="glass-card p-6 sm:p-8 rounded-3xl border border-white/10 hover:border-amber-500/30 transition-all duration-300 shadow-sm"
+                  className="glass-card p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl border border-white/10 hover:border-amber-500/30 transition-all duration-300 shadow-sm"
                 >
-                  <div className="flex items-center justify-between gap-4 mb-4">
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-11 h-11 rounded-full bg-linear-to-br from-amber-400 via-amber-500 to-amber-600 text-slate-950 font-serif font-black text-sm flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20 border border-amber-300/40">
-                        {getInitials(r.name)}
-                      </div>
-                      <div>
-                        <h4 className="font-serif font-bold text-white text-base">{r.name}</h4>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[11px] text-emerald-400 flex items-center gap-1 font-semibold">
-                            <ShieldCheck size={13} /> Verified Patron
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <UserAvatar 
+                        src={r.avatar} 
+                        name={r.name} 
+                        size="md" 
+                        className="w-10 h-10 sm:w-11 sm:h-11 text-xs sm:text-sm"
+                      />
+                      <div className="min-w-0">
+                        <h4 className="font-serif font-bold text-white text-sm sm:text-base truncate">{r.name}</h4>
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-0.5">
+                          <span className="text-[10px] sm:text-[11px] text-emerald-400 flex items-center gap-1 font-semibold whitespace-nowrap">
+                            <ShieldCheck size={12} /> Verified Patron
                           </span>
                           <span className="text-slate-600 text-xs">•</span>
-                          <span className="text-[11px] text-slate-500">{r.date}</span>
+                          <span className="text-[10px] sm:text-[11px] text-slate-400 whitespace-nowrap">{r.date}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex gap-1 text-amber-400">
+                    <div className="flex gap-1 text-amber-400 shrink-0 self-start sm:self-center">
                       {Array.from({ length: r.rating || 5 }).map((_, i) => (
                         <Star key={i} size={14} fill="currentColor" strokeWidth={0} />
                       ))}
                     </div>
                   </div>
 
-                  <p className="text-slate-300 text-xs sm:text-sm leading-relaxed italic font-normal">
+                  <p className="text-slate-300 text-xs sm:text-sm leading-relaxed italic font-normal break-words">
                     "{r.content}"
                   </p>
                 </div>

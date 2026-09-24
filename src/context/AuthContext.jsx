@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from './ToastContext';
+import { fetchUserProfile } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -23,12 +24,37 @@ export const AuthProvider = ({ children }) => {
     return true;
   });
 
+  const [user, setUser] = useState(null);
+
+  const fetchUser = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setUser(null);
+      return;
+    }
+    try {
+      const data = await fetchUserProfile(token);
+      setUser(data);
+    } catch (err) {
+      console.error("Failed to fetch user profile", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchUser();
+    } else {
+      setUser(null);
+    }
+  }, [isAuthenticated, fetchUser]);
+
   const lastRecordedActivityRef = useRef(Date.now());
 
   const logout = useCallback((message = "Logged out successfully") => {
     localStorage.removeItem('token');
     localStorage.removeItem('lastActivityTime');
     setIsAuthenticated(false);
+    setUser(null);
     if (showToast) {
       showToast(message, "info");
     }
@@ -40,6 +66,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('lastActivityTime', now.toString());
     lastRecordedActivityRef.current = now;
     setIsAuthenticated(true);
+    fetchUser();
     if (showToast) {
       showToast("Logged in successfully", "success");
     }
@@ -108,7 +135,7 @@ export const AuthProvider = ({ children }) => {
   }, [isAuthenticated, logout, recordActivity]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, recordActivity }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, setUser, refreshUser: fetchUser, login, logout, recordActivity }}>
       {children}
     </AuthContext.Provider>
   );

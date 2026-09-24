@@ -170,6 +170,28 @@ export const updateUserProfile = async (token, userData) => {
     }
 };
 
+export const uploadUserProfilePicture = async (token, file) => {
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await fetch(`${API_URL}/auth/me/avatar`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.detail || 'Failed to upload profile picture');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error uploading profile picture:', error);
+        throw error;
+    }
+};
+
 export const createReservation = async (reservationData) => {
   try {
     const token = localStorage.getItem('token');

@@ -40,7 +40,7 @@ function GalleryPage() {
     : images.filter(img => img.category === activeTab);
 
   return (
-    <div className="min-h-screen py-10 pb-24">
+    <div className="min-h-screen pt-8 sm:pt-10 pb-20 sm:pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}

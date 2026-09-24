@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 
 function AboutPage() {
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-20 sm:pb-24">
       {/* Hero Banner */}
-      <div className="relative py-24 sm:py-28 bg-[#FAF7F2] dark:bg-[#050608] border-b border-stone-200/80 dark:border-white/[0.08] overflow-hidden">
+      <div className="relative py-24 sm:py-28 bg-[#FAF7F2] dark:bg-[#050608] overflow-hidden">
         <div className="absolute inset-0 opacity-50 bg-[url('https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#FAF7F2] via-[#FAF7F2]/80 to-[#FAF7F2]/60 dark:from-[#050608] dark:via-[#050608]/60 dark:to-[#050608]/75" />
         
@@ -23,7 +23,7 @@ function AboutPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20">
         
         {/* Mission Section */}
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-24">

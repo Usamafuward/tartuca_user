@@ -87,7 +87,7 @@ function CheckoutPage() {
 
   if (status === 'success') {
     return (
-      <div className="min-h-[80vh] py-16 flex items-center justify-center px-4">
+      <div className="min-h-[80vh] pt-12 sm:pt-16 pb-20 sm:pb-24 flex items-center justify-center px-4">
         <div className="glass-card p-8 sm:p-12 rounded-3xl shadow-2xl max-w-lg w-full text-center border border-amber-500/30 animate-in fade-in zoom-in duration-300">
           <div className="w-20 h-20 bg-amber-500/15 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-amber-500/30 shadow-lg shadow-amber-500/20">
             <Check size={40} className="stroke-[2.5]" />
@@ -143,7 +143,7 @@ function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen py-10">
+    <div className="min-h-screen pt-8 sm:pt-10 pb-20 sm:pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Stepper Breadcrumb */}

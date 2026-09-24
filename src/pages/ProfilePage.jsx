@@ -1,19 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { fetchUserProfile, updateUserProfile, fetchUserOrders, fetchUserReservations } from '../services/api';
-import { User, Mail, Phone, MapPin, LogOut, Package, Calendar, Clock, Users, Utensils, ChevronDown, ChevronUp, Sparkles, ShieldCheck } from 'lucide-react';
+import { fetchUserProfile, updateUserProfile, fetchUserOrders, fetchUserReservations, uploadUserProfilePicture } from '../services/api';
+import { User, Mail, Phone, MapPin, LogOut, Package, Calendar, Clock, Users, Utensils, ChevronDown, ChevronUp, Sparkles, ShieldCheck, Image as ImageIcon, Upload, Link as LinkIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
+import UserAvatar from '../components/common/UserAvatar';
 
 function ProfilePage() {
     const navigate = useNavigate();
-    const { logout } = useAuth();
+    const { logout, refreshUser } = useAuth();
     const { formatPrice } = useSettings();
     const [user, setUser] = useState({
         full_name: '',
         email: '',
         phone: '',
-        address: ''
+        address: '',
+        profile_picture: ''
     });
     const [activeTab, setActiveTab] = useState('orders');
     const [orders, setOrders] = useState([]);
@@ -22,6 +24,9 @@ function ProfilePage() {
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState('');
     const [expandedOrder, setExpandedOrder] = useState(null);
+    const [photoInputMode, setPhotoInputMode] = useState('url'); // 'url' | 'upload'
+    const [uploadingPhoto, setUploadingPhoto] = useState(false);
+    const [selectedFileName, setSelectedFileName] = useState('');
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -42,7 +47,8 @@ function ProfilePage() {
                     full_name: profileData.full_name || '',
                     email: profileData.email || '',
                     phone: profileData.phone || '',
-                    address: profileData.address || ''
+                    address: profileData.address || '',
+                    profile_picture: profileData.profile_picture || ''
                 });
                 setOrders(ordersData || []);
                 setReservations(reservationsData || []);
@@ -58,6 +64,39 @@ function ProfilePage() {
     const handleLogout = () => {
         logout();
         navigate('/');
+    };
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            setMessage('Please select a valid image file (JPEG, PNG, WebP).');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            setMessage('Image file size must be less than 5MB.');
+            return;
+        }
+
+        setSelectedFileName(file.name);
+        setUploadingPhoto(true);
+        setMessage('');
+        const token = localStorage.getItem('token');
+        try {
+            const updatedUser = await uploadUserProfilePicture(token, file);
+            setUser(prev => ({
+                ...prev,
+                profile_picture: updatedUser.profile_picture
+            }));
+            if (refreshUser) refreshUser();
+            setMessage('Profile photo uploaded and updated successfully!');
+        } catch (err) {
+            console.error(err);
+            setMessage(err.message || 'Failed to upload photo.');
+        } finally {
+            setUploadingPhoto(false);
+        }
     };
 
     const handleChange = (e) => {
@@ -85,8 +124,10 @@ function ProfilePage() {
             await updateUserProfile(token, {
                 full_name: user.full_name,
                 phone: user.phone,
-                address: user.address
+                address: user.address,
+                profile_picture: user.profile_picture || null
             });
+            if (refreshUser) refreshUser();
             setMessage('Profile updated successfully!');
         } catch (err) {
             console.error(err);
@@ -103,7 +144,7 @@ function ProfilePage() {
     );
 
     return (
-        <div className="min-h-screen py-10 pb-24">
+        <div className="min-h-screen pt-8 sm:pt-10 pb-20 sm:pb-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 
                 {/* Header */}
@@ -143,7 +184,112 @@ function ProfilePage() {
                                 </div>
                             )}
 
+                            {/* Member Profile Avatar Spotlight */}
+                            <div className="flex flex-col items-center justify-center mb-6 pb-6 border-b border-white/[0.08]">
+                                <div className="relative">
+                                    <UserAvatar 
+                                        src={user.profile_picture} 
+                                        name={user.full_name || user.email} 
+                                        size="2xl"
+                                        className="ring-4 ring-amber-500/20 shadow-2xl"
+                                    />
+                                    <div className="absolute -bottom-1 -right-1 bg-amber-500 text-slate-950 p-1.5 rounded-full shadow-lg border-2 border-[#0B0D13]">
+                                        <Sparkles size={12} />
+                                    </div>
+                                </div>
+                                <h3 className="text-white font-serif font-bold text-base mt-3">
+                                    {user.full_name || 'Tartuca Member'}
+                                </h3>
+                                <p className="text-slate-400 text-xs font-mono mt-0.5">{user.email}</p>
+                            </div>
+
                             <form onSubmit={handleSubmit} className="space-y-4">
+                                {/* Profile Picture Mode: URL or Upload */}
+                                <div className="space-y-2.5">
+                                    <div className="flex items-center justify-between">
+                                        <label className="block text-xs font-semibold text-slate-400">Profile Picture</label>
+                                        {user.profile_picture && (
+                                            <button 
+                                                type="button" 
+                                                onClick={() => {
+                                                    setUser(prev => ({ ...prev, profile_picture: '' }));
+                                                    setSelectedFileName('');
+                                                }}
+                                                className="text-[10px] text-rose-400 hover:text-rose-300 font-medium transition-colors"
+                                            >
+                                                Reset to Initial
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Dual-Mode Selector */}
+                                    <div className="grid grid-cols-2 p-1 rounded-xl bg-black/40 border border-white/10 text-xs">
+                                        <button
+                                            type="button"
+                                            onClick={() => setPhotoInputMode('url')}
+                                            className={`py-1.5 px-3 rounded-lg font-medium transition-all flex items-center justify-center gap-1.5 ${
+                                                photoInputMode === 'url'
+                                                    ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                                                    : 'text-slate-400 hover:text-white'
+                                            }`}
+                                        >
+                                            <LinkIcon size={12} />
+                                            <span>Image URL</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setPhotoInputMode('upload')}
+                                            className={`py-1.5 px-3 rounded-lg font-medium transition-all flex items-center justify-center gap-1.5 ${
+                                                photoInputMode === 'upload'
+                                                    ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                                                    : 'text-slate-400 hover:text-white'
+                                            }`}
+                                        >
+                                            <Upload size={12} />
+                                            <span>Upload Photo</span>
+                                        </button>
+                                    </div>
+
+                                    {photoInputMode === 'url' ? (
+                                        <div className="space-y-1">
+                                            <div className="relative">
+                                                <ImageIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+                                                <input
+                                                    type="url"
+                                                    name="profile_picture"
+                                                    value={user.profile_picture}
+                                                    onChange={handleChange}
+                                                    placeholder="https://images.unsplash.com/..."
+                                                    className="w-full pl-10 pr-4 py-2.5 bg-[#0E1015] rounded-xl border border-white/10 text-xs text-white placeholder-slate-600 focus:border-amber-400/60 focus:outline-none"
+                                                />
+                                            </div>
+                                            <p className="text-[10px] text-slate-500">
+                                                Paste an image web link. Leave blank to automatically use your name's initial letter.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-1">
+                                            <label className="relative flex flex-col items-center justify-center p-4 border border-dashed border-white/20 hover:border-amber-500/50 rounded-xl bg-[#0E1015] cursor-pointer group transition-all">
+                                                <input 
+                                                    type="file" 
+                                                    accept="image/png, image/jpeg, image/webp" 
+                                                    onChange={handleFileUpload} 
+                                                    className="hidden" 
+                                                    disabled={uploadingPhoto}
+                                                />
+                                                <Upload size={20} className={`mb-1.5 text-slate-400 group-hover:text-amber-400 transition-colors ${uploadingPhoto ? 'animate-bounce text-amber-400' : ''}`} />
+                                                <span className="text-xs font-semibold text-slate-300 group-hover:text-white transition-colors">
+                                                    {uploadingPhoto ? 'Uploading photo...' : (selectedFileName ? `Selected: ${selectedFileName}` : 'Choose Photo File')}
+                                                </span>
+                                                <span className="text-[10px] text-slate-500 mt-0.5">JPG, PNG, WebP up to 5MB</span>
+                                            </label>
+                                            <p className="text-[10px] text-slate-500">
+                                                Select a photo from your computer or phone to upload directly.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-400 mb-1.5">Full Name</label>
                                     <div className="relative">

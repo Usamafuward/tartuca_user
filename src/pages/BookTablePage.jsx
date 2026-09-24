@@ -112,7 +112,7 @@ function BookTablePage() {
 
   if (status === 'success' && confirmedBooking) {
     return (
-      <div className="min-h-[80vh] py-16 flex items-center justify-center px-4">
+      <div className="min-h-[80vh] pt-12 sm:pt-16 pb-20 sm:pb-24 flex items-center justify-center px-4">
         <div className="glass-card p-8 sm:p-12 rounded-3xl shadow-2xl max-w-lg w-full text-center border border-amber-500/30 animate-in fade-in zoom-in duration-300">
           <div className="w-20 h-20 bg-amber-500/15 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-amber-500/30 shadow-lg shadow-amber-500/20">
             <Check size={40} className="stroke-[2.5]" />
@@ -179,7 +179,7 @@ function BookTablePage() {
   }
 
   return (
-    <div className="min-h-screen py-10 relative">
+    <div className="min-h-screen pt-8 sm:pt-10 pb-20 sm:pb-24 relative">
       <LoadingOverlay isVisible={status === 'submitting'} text="Confirming your table reservation..." />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -403,7 +403,7 @@ function BookTablePage() {
                       className={`p-4 rounded-2xl border text-left transition-all ${
                         seatingArea === 'Main Dining'
                           ? 'border-amber-500 bg-amber-500/15 dark:bg-amber-500/10 shadow-sm ring-1 ring-amber-500/30'
-                          : 'border-stone-300/80 dark:border-white/10 bg-stone-100/70 hover:bg-stone-100 dark:bg-white/[0.03] hover:border-amber-500/40'
+                          : 'border-stone-300/80 dark:border-white/10 bg-stone-100/70 dark:bg-white/[0.03] hover:border-amber-500/40'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
@@ -426,7 +426,7 @@ function BookTablePage() {
                       className={`p-4 rounded-2xl border text-left transition-all ${
                         seatingArea === 'Patio / Terrace'
                           ? 'border-amber-500 bg-amber-500/15 dark:bg-amber-500/10 shadow-sm ring-1 ring-amber-500/30'
-                          : 'border-stone-300/80 dark:border-white/10 bg-stone-100/70 hover:bg-stone-100 dark:bg-white/[0.03] hover:border-amber-500/40'
+                          : 'border-stone-300/80 dark:border-white/10 bg-stone-100/70 dark:bg-white/[0.03] hover:border-amber-500/40'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">

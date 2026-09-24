@@ -4,7 +4,7 @@ import { ShieldCheck, FileText, ArrowLeft } from 'lucide-react';
 
 export const PrivacyPage = () => {
   return (
-    <div className="min-h-screen py-16">
+    <div className="min-h-screen pt-8 sm:pt-12 pb-20 sm:pb-24">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link to="/" className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-amber-400 font-bold mb-6 hover:text-amber-300">
           <ArrowLeft size={14} /> Back to Home
@@ -52,7 +52,7 @@ export const PrivacyPage = () => {
 
 export const TermsPage = () => {
   return (
-    <div className="min-h-screen py-16">
+    <div className="min-h-screen pt-8 sm:pt-12 pb-20 sm:pb-24">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link to="/" className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-amber-400 font-bold mb-6 hover:text-amber-300">
           <ArrowLeft size={14} /> Back to Home

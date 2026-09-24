@@ -67,6 +67,20 @@ function MenuPage() {
         }));
         setMenuItems(mappedItems);
 
+        const getBadgeStyles = (color = '') => {
+          const c = (color || '').toLowerCase().replace(/^bg-/, '');
+          if (c.includes('rose') || c.includes('pink') || c.includes('red-500')) return { bg: '#f43f5e', text: '#ffffff' };
+          if (c.includes('red')) return { bg: '#dc2626', text: '#ffffff' };
+          if (c.includes('teal') || c.includes('cyan')) return { bg: '#0d9488', text: '#ffffff' };
+          if (c.includes('orange')) return { bg: '#ea580c', text: '#ffffff' };
+          if (c.includes('amber')) return { bg: '#d97706', text: '#ffffff' };
+          if (c.includes('yellow')) return { bg: '#eab308', text: '#020617' };
+          if (c.includes('emerald') || c.includes('green')) return { bg: '#059669', text: '#ffffff' };
+          if (c.includes('blue') || c.includes('sky')) return { bg: '#2563eb', text: '#ffffff' };
+          if (c.includes('purple') || c.includes('violet')) return { bg: '#9333ea', text: '#ffffff' };
+          return { bg: '#f59e0b', text: '#020617' };
+        };
+
         const mappedOffers = offersData.map(offer => ({
           id: offer.id,
           name: offer.title,
@@ -76,7 +90,7 @@ function MenuPage() {
             ? `${API_URL}/special-offers/${offer.id}/image` 
             : (offer.image_url || 'https://images.unsplash.com/photo-1544025162-d76694265947?w=500'),
           badge: offer.badge_text || "Chef's Special",
-          badgeColor: offer.badge_color || "bg-amber-500",
+          badgeStyle: getBadgeStyles(offer.badge_color),
           type: 'special_offer',
           rating: 4.9,
           is_vegetarian: false,
@@ -298,10 +312,10 @@ function MenuPage() {
   );
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-20 sm:pb-24">
       
       {/* Luxury Hero Banner */}
-      <div className="relative py-24 sm:py-28 bg-[#FAF7F2] dark:bg-[#050608] border-b border-stone-200/80 dark:border-white/[0.08] overflow-hidden mb-12">
+      <div className="relative py-24 sm:py-28 bg-[#FAF7F2] dark:bg-[#050608] overflow-hidden mb-12">
         <div className="absolute inset-0 opacity-50 bg-[url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#FAF7F2] via-[#FAF7F2]/80 to-[#FAF7F2]/60 dark:from-[#050608] dark:via-[#050608]/60 dark:to-[#050608]/75" />
         
@@ -340,18 +354,18 @@ function MenuPage() {
       {/* Primary Menu Mode Switcher: Regular Menu vs Chef's Specials */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
         <div className="flex justify-center">
-          <div className="inline-flex p-1.5 rounded-2xl bg-stone-100/90 dark:bg-white/[0.04] border border-stone-200/80 dark:border-white/10 backdrop-blur-md shadow-sm">
+          <div className="w-full max-w-lg p-1.5 rounded-2xl bg-stone-100/90 dark:bg-white/[0.04] border border-stone-200/80 dark:border-white/10 backdrop-blur-md shadow-sm grid grid-cols-2 gap-1.5">
             <button
               onClick={() => handleSwitchMenuType('regular')}
-              className={`flex items-center gap-2.5 px-6 sm:px-8 py-3 rounded-xl text-xs sm:text-sm font-extrabold uppercase tracking-wider transition-all duration-300 ${
+              className={`flex items-center justify-center gap-1.5 sm:gap-2.5 px-3 sm:px-8 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-extrabold uppercase tracking-wider transition-all duration-300 ${
                 menuType === 'regular'
-                  ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/25 scale-[1.02]'
+                  ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/25 scale-[1.01]'
                   : 'text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/[0.05]'
               }`}
             >
-              <Utensils size={16} />
-              <span>Regular Menu</span>
-              <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold font-mono transition-colors ${
+              <Utensils size={15} className="shrink-0" />
+              <span className="truncate">Regular Menu</span>
+              <span className={`text-[10px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 rounded-full font-bold font-mono shrink-0 transition-colors ${
                 menuType === 'regular' ? 'bg-slate-950/20 text-slate-950' : 'bg-stone-200 text-stone-700 dark:bg-white/10 dark:text-slate-300'
               }`}>
                 {menuItems.length}
@@ -360,15 +374,15 @@ function MenuPage() {
 
             <button
               onClick={() => handleSwitchMenuType('specials')}
-              className={`flex items-center gap-2.5 px-6 sm:px-8 py-3 rounded-xl text-xs sm:text-sm font-extrabold uppercase tracking-wider transition-all duration-300 ${
+              className={`flex items-center justify-center gap-1.5 sm:gap-2.5 px-3 sm:px-8 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-extrabold uppercase tracking-wider transition-all duration-300 ${
                 menuType === 'specials'
-                  ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/25 scale-[1.02]'
+                  ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/25 scale-[1.01]'
                   : 'text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/[0.05]'
               }`}
             >
-              <Flame size={16} className={menuType === 'specials' ? 'text-slate-950' : 'text-amber-500 dark:text-amber-400'} />
-              <span>Chef's Specials</span>
-              <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold font-mono transition-colors ${
+              <Flame size={15} className={`shrink-0 ${menuType === 'specials' ? 'text-slate-950' : 'text-amber-500 dark:text-amber-400'}`} />
+              <span className="truncate">Chef's Specials</span>
+              <span className={`text-[10px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 rounded-full font-bold font-mono shrink-0 transition-colors ${
                 menuType === 'specials' ? 'bg-slate-950/20 text-slate-950' : 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
               }`}>
                 {specialOffers.length}
@@ -585,19 +599,25 @@ function MenuPage() {
                         </div>
 
                         {/* Dietary or Special Badges */}
-                        <div className="absolute top-3 left-3 flex flex-col gap-1">
+                        <div className="absolute top-3 left-3 flex flex-col items-start gap-1">
                           {item.badge && (
-                            <span className="bg-amber-500 text-slate-950 text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
+                            <span 
+                              style={{ 
+                                backgroundColor: item.badgeStyle?.bg || '#f59e0b', 
+                                color: item.badgeStyle?.text || '#ffffff' 
+                              }}
+                              className="text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm select-none w-fit"
+                            >
                               {item.badge}
                             </span>
                           )}
                           {item.is_vegetarian && (
-                            <span className="bg-emerald-500/90 backdrop-blur-xs text-white text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
+                            <span className="bg-emerald-500/95 backdrop-blur-xs text-white text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm select-none w-fit">
                               Veg
                             </span>
                           )}
                           {item.is_gluten_free && (
-                            <span className="bg-amber-500/90 backdrop-blur-xs text-slate-950 text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
+                            <span className="bg-amber-500/95 backdrop-blur-xs text-slate-950 text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm select-none w-fit">
                               Gluten Free
                             </span>
                           )}

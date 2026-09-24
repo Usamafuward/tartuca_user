@@ -4,11 +4,12 @@ import { Menu, X, ShoppingBag, User, LogIn, Calendar, Sun, Moon, Sparkles } from
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { useTheme } from '../../context/ThemeContext';
+import UserAvatar from '../common/UserAvatar';
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { getCartCount } = useCart();
   const { isDark, toggleTheme, theme } = useTheme();
 
@@ -104,10 +105,16 @@ function Navbar() {
             {isAuthenticated ? (
               <Link
                 to="/profile"
-                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:text-white hover:border-white/20 transition-all text-xs font-semibold"
+                className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:text-white hover:border-amber-500/30 transition-all text-xs font-semibold group"
+                title="View Profile"
               >
-                <User size={15} className="text-amber-400" />
-                <span>Profile</span>
+                <UserAvatar 
+                  src={user?.profile_picture} 
+                  name={user?.full_name || user?.email || 'User'} 
+                  size="xs" 
+                  className="w-6 h-6 ring-1 ring-amber-500/40"
+                />
+                <span className="max-w-[100px] truncate">{user?.full_name ? user.full_name.split(' ')[0] : 'Profile'}</span>
               </Link>
             ) : (
               <Link
@@ -139,6 +146,21 @@ function Navbar() {
             >
               {isDark ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-slate-700" />}
             </button>
+
+            {isAuthenticated && (
+              <Link
+                to="/profile"
+                className="p-1 rounded-xl bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:border-amber-500/30 transition-colors"
+                title="My Profile"
+              >
+                <UserAvatar 
+                  src={user?.profile_picture} 
+                  name={user?.full_name || user?.email || 'User'} 
+                  size="xs" 
+                  className="w-6 h-6 ring-1 ring-amber-500/40"
+                />
+              </Link>
+            )}
 
             <Link
               to="/cart"
@@ -192,10 +214,15 @@ function Navbar() {
               <Link
                 to="/profile"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center justify-center gap-2 py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] text-slate-300 font-semibold text-sm"
+                className="flex items-center justify-center gap-3 py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] text-slate-300 font-semibold text-sm"
               >
-                <User size={16} className="text-amber-400" />
-                My Account & Orders
+                <UserAvatar 
+                  src={user?.profile_picture} 
+                  name={user?.full_name || user?.email || 'User'} 
+                  size="sm" 
+                  className="w-7 h-7 ring-1 ring-amber-500/40"
+                />
+                <span>{user?.full_name ? `My Account (${user.full_name})` : 'My Account & Orders'}</span>
               </Link>
             ) : (
               <Link

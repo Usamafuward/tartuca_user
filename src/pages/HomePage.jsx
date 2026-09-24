@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { 
   ArrowRight, Star, Sandwich, Salad, CakeSlice, 
   Martini, Utensils, Plus, ChevronLeft, ChevronRight, Quote,
-  Calendar, Flame, Sparkles, Clock, ShieldCheck
+  Calendar, Flame, Sparkles, Clock, ShieldCheck,
+  Pizza, CookingPot, UtensilsCrossed, Fish, Drumstick
 } from 'lucide-react';
 import { 
   fetchCategories, fetchMenuItems, fetchSpecialOffers, 
@@ -13,6 +14,7 @@ import { Skeleton, CategorySkeleton, MenuItemSkeleton } from '../components/comm
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
+import UserAvatar from '../components/common/UserAvatar';
 
 function HomePage() {
   const { addToCart } = useCart();
@@ -54,35 +56,121 @@ function HomePage() {
           fetchGallery().catch(() => [])
         ]);
         
-        // Icon mapping
-        const getIcon = (slug = '') => {
-          const s = slug.toLowerCase();
-          if (s.includes('pizza') || s.includes('fast') || s.includes('bread')) return Sandwich;
-          if (s.includes('salad') || s.includes('healthy') || s.includes('appetizer')) return Salad;
-          if (s.includes('dessert') || s.includes('sweet') || s.includes('cake')) return CakeSlice;
-          if (s.includes('drink') || s.includes('beverage') || s.includes('wine')) return Martini;
+        // Distinct, semantically rich icon mapping for each culinary category
+        const getCategoryIcon = (cat = {}) => {
+          const text = `${cat.slug || ''} ${cat.name || ''}`.toLowerCase();
+          if (text.includes('seafood') || text.includes('fish') || text.includes('prawn') || text.includes('crab') || text.includes('lagoon')) {
+            return Fish;
+          }
+          if (text.includes('pizza')) {
+            return Pizza;
+          }
+          if (text.includes('rice') || text.includes('kottu') || text.includes('pasta') || text.includes('biryani') || text.includes('noodle')) {
+            return CookingPot;
+          }
+          if (text.includes('curry') || text.includes('curries') || text.includes('grill') || text.includes('secondi') || text.includes('claypot')) {
+            return Flame;
+          }
+          if (text.includes('short eat') || text.includes('starter') || text.includes('antipasti') || text.includes('snack')) {
+            return UtensilsCrossed;
+          }
+          if (text.includes('salad') || text.includes('sambol') || text.includes('healthy') || text.includes('vegetable')) {
+            return Salad;
+          }
+          if (text.includes('dessert') || text.includes('sweet') || text.includes('cake') || text.includes('pudding')) {
+            return CakeSlice;
+          }
+          if (text.includes('drink') || text.includes('beverage') || text.includes('mocktail') || text.includes('cocktail') || text.includes('wine')) {
+            return Martini;
+          }
+          if (text.includes('burger') || text.includes('sandwich') || text.includes('bread') || text.includes('paan')) {
+            return Sandwich;
+          }
+          if (text.includes('roast') || text.includes('meat') || text.includes('chicken') || text.includes('beef') || text.includes('mutton')) {
+            return Drumstick;
+          }
           return Utensils;
         };
 
         setCategories(cats.map((cat) => ({
           ...cat,
-          icon: getIcon(cat.slug || cat.name),
+          icon: getCategoryIcon(cat),
           count: items.filter(i => i.category_id === cat.id).length + ' Items'
         })));
         setCategoriesLoading(false);
 
-        const getBadgeClass = (color = '') => {
-          if (!color) return 'bg-amber-500/90 text-slate-950';
-          if (color.startsWith('bg-')) return color;
-          const map = {
-            red: 'bg-rose-500 text-white',
-            blue: 'bg-sky-500 text-white',
-            green: 'bg-emerald-500 text-white',
-            yellow: 'bg-amber-400 text-slate-950',
-            orange: 'bg-amber-500 text-slate-950',
-            purple: 'bg-purple-500 text-white'
+        const getBadgeStyles = (color = '') => {
+          const c = (color || '').toLowerCase().replace(/^bg-/, '');
+          
+          if (c.includes('rose') || c.includes('pink') || c.includes('red-500')) {
+            return {
+              bg: '#f43f5e',
+              text: '#ffffff',
+              shadow: 'rgba(244, 63, 94, 0.5)'
+            };
+          }
+          if (c.includes('red')) {
+            return {
+              bg: '#dc2626',
+              text: '#ffffff',
+              shadow: 'rgba(220, 38, 38, 0.5)'
+            };
+          }
+          if (c.includes('teal') || c.includes('cyan')) {
+            return {
+              bg: '#0d9488',
+              text: '#ffffff',
+              shadow: 'rgba(13, 148, 136, 0.5)'
+            };
+          }
+          if (c.includes('orange')) {
+            return {
+              bg: '#ea580c',
+              text: '#ffffff',
+              shadow: 'rgba(234, 88, 12, 0.5)'
+            };
+          }
+          if (c.includes('amber')) {
+            return {
+              bg: '#d97706',
+              text: '#ffffff',
+              shadow: 'rgba(217, 119, 6, 0.5)'
+            };
+          }
+          if (c.includes('yellow')) {
+            return {
+              bg: '#eab308',
+              text: '#020617',
+              shadow: 'rgba(234, 179, 8, 0.5)'
+            };
+          }
+          if (c.includes('emerald') || c.includes('green')) {
+            return {
+              bg: '#059669',
+              text: '#ffffff',
+              shadow: 'rgba(5, 150, 105, 0.5)'
+            };
+          }
+          if (c.includes('blue') || c.includes('sky')) {
+            return {
+              bg: '#2563eb',
+              text: '#ffffff',
+              shadow: 'rgba(37, 99, 235, 0.5)'
+            };
+          }
+          if (c.includes('purple') || c.includes('violet')) {
+            return {
+              bg: '#9333ea',
+              text: '#ffffff',
+              shadow: 'rgba(147, 51, 234, 0.5)'
+            };
+          }
+          // Default: Amber gold badge
+          return {
+            bg: '#f59e0b',
+            text: '#020617',
+            shadow: 'rgba(245, 158, 11, 0.5)'
           };
-          return map[color.toLowerCase()] || 'bg-amber-500 text-slate-950';
         };
 
         setSpecialOffers(offers.map(offer => ({
@@ -92,7 +180,7 @@ function HomePage() {
           price: parseFloat(offer.price) || 0,
           image: offer.has_image ? `${API_URL}/special-offers/${offer.id}/image` : (offer.image_url || 'https://images.unsplash.com/photo-1544025162-d76694265947?w=500'),
           badge: offer.badge_text,
-          badgeColor: getBadgeClass(offer.badge_color),
+          badgeStyle: getBadgeStyles(offer.badge_color),
           rating: 4.9,
           reviews: 142
         })));
@@ -102,7 +190,7 @@ function HomePage() {
           name: r.author_name,
           rating: r.rating,
           content: r.comment,
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(r.author_name || 'Guest')}&background=161922&color=F59E0B`
+          avatar: r.avatar || r.profile_picture || null
         })));
         setTestimonialsLoading(false);
 
@@ -133,7 +221,7 @@ function HomePage() {
   };
 
   return (
-    <div className="space-y-24 sm:space-y-32 pb-24 overflow-hidden">
+    <div className="space-y-24 sm:space-y-32 pb-20 sm:pb-24 overflow-hidden">
       
       {/* 1. Balanced Cinematic Hero Section */}
       <section className="relative pt-6 sm:pt-10 lg:pt-12 pb-10 lg:pb-16 w-full flex items-center min-h-[calc(100vh-6rem)]">
@@ -319,7 +407,14 @@ function HomePage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#151821] via-transparent to-transparent opacity-60" />
                     
                     {item.badge && (
-                      <span className={`absolute top-3.5 left-3.5 ${item.badgeColor} text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-md`}>
+                      <span 
+                        style={{ 
+                          backgroundColor: item.badgeStyle?.bg || '#f59e0b', 
+                          color: item.badgeStyle?.text || '#ffffff',
+                          boxShadow: `0 4px 12px ${item.badgeStyle?.shadow || 'rgba(0,0,0,0.25)'}`
+                        }}
+                        className="absolute top-3.5 left-3.5 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider backdrop-blur-xs select-none"
+                      >
                         {item.badge}
                       </span>
                     )}
@@ -499,7 +594,7 @@ function HomePage() {
       {/* 5. Atmosphere Gallery Preview */}
       <section className="relative w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-4">
+          <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-8 sm:mb-12 gap-4">
             <div>
               <span className="text-amber-400 font-bold text-xs uppercase tracking-[0.2em] mb-2 block">
                 Our Restaurant
@@ -517,49 +612,49 @@ function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-[480px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:h-[480px]">
             {/* Left Large Showcase Image */}
-            <div className="relative rounded-3xl overflow-hidden group h-full border border-white/10">
+            <div className="relative rounded-3xl overflow-hidden group h-64 sm:h-72 md:h-full border border-white/10">
               <div 
                 className="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-700" 
                 style={{ backgroundImage: `url('${atmosphereImages[0]?.src || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'}')` }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6 z-10">
+              <div className="absolute bottom-5 sm:bottom-6 left-5 sm:left-6 right-5 sm:right-6 z-10">
                 <span className="!text-amber-400 text-amber-400 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-black/70 backdrop-blur-md border border-amber-500/40 mb-2 inline-block">
                   Main Dining Room
                 </span>
-                <h3 className="!text-white text-white font-serif text-xl font-bold drop-shadow-md">Cozy Indoor Dining</h3>
+                <h3 className="!text-white text-white font-serif text-lg sm:text-xl font-bold drop-shadow-md">Cozy Indoor Dining</h3>
               </div>
             </div>
 
             {/* Right Two Stacked Images */}
-            <div className="flex flex-col gap-6 h-full">
-              <div className="relative flex-1 rounded-3xl overflow-hidden group border border-white/10">
+            <div className="flex flex-col gap-4 sm:gap-6 md:h-full">
+              <div className="relative rounded-3xl overflow-hidden group h-64 sm:h-72 md:h-auto md:flex-1 border border-white/10">
                 <div 
                   className="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-700" 
                   style={{ backgroundImage: `url('${atmosphereImages[1]?.src || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800'}')` }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                <div className="absolute bottom-4 left-6 z-10">
+                <div className="absolute bottom-4 sm:bottom-5 left-5 sm:left-6 right-5 z-10">
                   <span className="!text-amber-400 text-amber-400 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md border border-amber-500/40 mb-1 inline-block">
                     Garden Terrace
                   </span>
-                  <h3 className="!text-white text-white font-serif text-lg font-bold drop-shadow-md">Outdoor Evening Seating</h3>
+                  <h3 className="!text-white text-white font-serif text-base sm:text-lg font-bold drop-shadow-md">Outdoor Evening Seating</h3>
                 </div>
               </div>
 
-              <div className="relative flex-1 rounded-3xl overflow-hidden group border border-white/10">
+              <div className="relative rounded-3xl overflow-hidden group h-64 sm:h-72 md:h-auto md:flex-1 border border-white/10">
                 <div 
                   className="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-700" 
                   style={{ backgroundImage: `url('${atmosphereImages[2]?.src || 'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=800'}')` }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                <div className="absolute bottom-4 left-6 z-10">
+                <div className="absolute bottom-4 sm:bottom-5 left-5 sm:left-6 right-5 z-10">
                   <span className="!text-amber-400 text-amber-400 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md border border-amber-500/40 mb-1 inline-block">
                     Beverage Bar
                   </span>
-                  <h3 className="!text-white text-white font-serif text-lg font-bold drop-shadow-md">Crafted Beverages & Fresh Mocktails</h3>
+                  <h3 className="!text-white text-white font-serif text-base sm:text-lg font-bold drop-shadow-md">Crafted Beverages & Fresh Mocktails</h3>
                 </div>
               </div>
             </div>
@@ -591,9 +686,12 @@ function HomePage() {
                 >
                   <div>
                     <div className="flex items-center gap-3.5 mb-6">
-                      <div className="w-12 h-12 rounded-full bg-linear-to-br from-amber-400 via-amber-500 to-amber-600 text-slate-950 font-serif font-black text-sm flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20 border border-amber-300/40">
-                        {getInitials(t.name)}
-                      </div>
+                      <UserAvatar 
+                        src={t.avatar} 
+                        name={t.name} 
+                        size="lg" 
+                        className="w-12 h-12 text-sm"
+                      />
                       <div>
                         <h4 className="font-serif font-bold text-white text-base">{t.name}</h4>
                         <div className="flex gap-1 mt-1 text-amber-400">
